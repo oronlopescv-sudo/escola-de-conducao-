@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  ALUNO
+}
+
+enum Categoria {
+  A
+  B
+  C
+  D
+  F
+  A1
+  B1
+  C1
+  D1
+  BE
+  CE
+  DE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  role      Role     @default(ALUNO)
+  criadoEm  DateTime @default(now())
+  aluno     Aluno?
+}
+
+model Aluno {
+  id             String            @id @default(cuid())
+  userId         String            @unique
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  telefone       String?
+  dataNascimento DateTime?
+  morada         String?
+  documento      String?
+  categoria      Categoria         @default(B)
+  dataInscricao  DateTime          @default(now())
+  ativo          Boolean           @default(true)
+  progresso      ModuloProgresso[]
+  tentativas     Tentativa[]
+}
+
+model Modulo {
+  id        String            @id @default(cuid())
+  numero    Int               @unique
+  titulo    String
+  descricao String?
+  videoUrl  String?
+  questoes  Questao[]
+  progresso ModuloProgresso[]
+}
+
+model ModuloProgresso {
+  alunoId     String
+  moduloId    String
+  concluido   Boolean   @default(false)
+  concluidoEm DateTime?
+  aluno       Aluno     @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  modulo      Modulo    @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+
+  @@id([alunoId, moduloId])
+}
+
+model Questao {
+  id         String  @id @default(cuid())
+  moduloId   String?
+  modulo     Modulo? @relation(fields: [moduloId], references: [id], onDelete: SetNull)
+  enunciado  String
+  opcaoA     String
+  opcaoB     String
+  opcaoC     String?
+  opcaoD     String?
+  correta    String // "A" | "B" | "C" | "D"
+  explicacao String?
+}
+
+model Tentativa {
+  id       String   @id @default(cuid())
+  alunoId  String
+  aluno    Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  criadaEm DateTime @default(now())
+  total    Int
+  acertos  Int
+  detalhes Json // [{questaoId, resposta, correta}]
+}

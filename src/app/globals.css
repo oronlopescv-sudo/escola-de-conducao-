@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-faixa text-asfalto font-body antialiased;
+}
+
+/* Assinatura visual: linha de estrada descontínua como barra de progresso */
+.estrada {
+  @apply relative h-3 rounded-full bg-asfalto overflow-hidden;
+}
+.estrada::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 14px,
+    rgba(247, 181, 0, 0.35) 14px 26px
+  );
+}
+.estrada-fill {
+  @apply absolute inset-y-0 left-0 bg-sinal rounded-full transition-all duration-700;
+}
+
+.card {
+  @apply bg-white border border-linha rounded-xl p-5;
+}
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.btn-primary {
+  @apply btn bg-sinal text-asfalto hover:bg-yellow-400;
+}
+.btn-dark {
+  @apply btn bg-asfalto text-white hover:bg-asfalto-2;
+}
+.btn-danger {
+  @apply btn bg-white border border-stop text-stop hover:bg-red-50;
+}
+.input {
+  @apply w-full rounded-lg border border-linha bg-white px-3 py-2 text-sm outline-none focus:border-sinal focus:ring-2 focus:ring-sinal/30;
+}
+.label {
+  @apply block text-xs font-semibold uppercase tracking-wide text-asfalto/60 mb-1;
+}

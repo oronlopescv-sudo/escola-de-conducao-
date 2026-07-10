@@ -1,0 +1,178 @@
+"use client";
+import { useEffect, useState } from "react";
+
+type Aluno = {
+  id: string;
+  categoria: string;
+  telefone?: string;
+  ativo: boolean;
+  dataInscricao: string;
+  user: { nome: string; email: string };
+  _count: { tentativas: number; progresso: number };
+};
+
+const categorias = ["A", "B", "C", "D", "F", "A1", "B1", "C1", "D1", "BE", "CE", "DE"];
+
+export default function Alunos() {
+  const [alunos, setAlunos] = useState<Aluno[]>([]);
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [erro, setErro] = useState("");
+  const [form, setForm] = useState({
+    nome: "",
+    email: "",
+    senha: "",
+    telefone: "",
+    documento: "",
+    morada: "",
+    categoria: "B",
+    dataNascimento: "",
+  });
+
+  async function carregar() {
+    const r = await fetch("/api/alunos");
+    if (r.ok) setAlunos(await r.json());
+  }
+  useEffect(() => {
+    carregar();
+  }, []);
+
+  async function criar(e: React.FormEvent) {
+    e.preventDefault();
+    setErro("");
+    const r = await fetch("/api/alunos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    if (!r.ok) {
+      const d = await r.json();
+      setErro(d.erro || "Erro ao criar aluno.");
+      return;
+    }
+    setForm({ nome: "", email: "", senha: "", telefone: "", documento: "", morada: "", categoria: "B", dataNascimento: "" });
+    setMostrarForm(false);
+    carregar();
+  }
+
+  async function alternarAtivo(a: Aluno) {
+    await fetch(`/api/alunos/${a.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ativo: !a.ativo }),
+    });
+    carregar();
+  }
+
+  async function eliminar(a: Aluno) {
+    if (!confirm(`Eliminar o aluno ${a.user.nome}? Esta ação é permanente.`)) return;
+    await fetch(`/api/alunos/${a.id}`, { method: "DELETE" });
+    carregar();
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-display text-2xl font-extrabold">Alunos</h1>
+        <button className="btn-primary" onClick={() => setMostrarForm(!mostrarForm)}>
+          {mostrarForm ? "Fechar" : "Inscrever aluno"}
+        </button>
+      </div>
+
+      {mostrarForm && (
+        <form onSubmit={criar} className="card mb-6 grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="label">Nome completo *</label>
+            <input className="input" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
+          </div>
+          <div>
+            <label className="label">Email *</label>
+            <input className="input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+          </div>
+          <div>
+            <label className="label">Palavra-passe *</label>
+            <input className="input" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} required />
+          </div>
+          <div>
+            <label className="label">Telefone</label>
+            <input className="input" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
+          </div>
+          <div>
+            <label className="label">Documento de identificação</label>
+            <input className="input" value={form.documento} onChange={(e) => setForm({ ...form, documento: e.target.value })} />
+          </div>
+          <div>
+            <label className="label">Morada</label>
+            <input className="input" value={form.morada} onChange={(e) => setForm({ ...form, morada: e.target.value })} />
+          </div>
+          <div>
+            <label className="label">Data de nascimento</label>
+            <input className="input" type="date" value={form.dataNascimento} onChange={(e) => setForm({ ...form, dataNascimento: e.target.value })} />
+          </div>
+          <div>
+            <label className="label">Categoria da carta</label>
+            <select className="input" value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })}>
+              {categorias.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          {erro && <p className="text-sm text-stop md:col-span-2">{erro}</p>}
+          <div className="md:col-span-2">
+            <button className="btn-dark">Guardar inscrição</button>
+          </div>
+        </form>
+      )}
+
+      <div className="card overflow-x-auto p-0">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs uppercase tracking-wide text-asfalto/50 border-b border-linha">
+              <th className="p-4">Nome</th>
+              <th className="p-4">Email</th>
+              <th className="p-4">Categoria</th>
+              <th className="p-4">Módulos</th>
+              <th className="p-4">Simulados</th>
+              <th className="p-4">Estado</th>
+              <th className="p-4"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {alunos.map((a) => (
+              <tr key={a.id} className="border-b border-linha last:border-0">
+                <td className="p-4 font-medium">{a.user.nome}</td>
+                <td className="p-4 text-asfalto/60">{a.user.email}</td>
+                <td className="p-4">
+                  <span className="inline-block rounded bg-sinal/20 px-2 py-0.5 font-semibold">{a.categoria}</span>
+                </td>
+                <td className="p-4">{a._count.progresso}/23</td>
+                <td className="p-4">{a._count.tentativas}</td>
+                <td className="p-4">
+                  <button
+                    onClick={() => alternarAtivo(a)}
+                    className={`rounded px-2 py-0.5 text-xs font-semibold ${
+                      a.ativo ? "bg-verde/15 text-verde" : "bg-stop/15 text-stop"
+                    }`}
+                  >
+                    {a.ativo ? "Ativo" : "Inativo"}
+                  </button>
+                </td>
+                <td className="p-4 text-right">
+                  <button onClick={() => eliminar(a)} className="text-xs text-stop hover:underline">
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {alunos.length === 0 && (
+              <tr>
+                <td className="p-6 text-asfalto/50" colSpan={7}>
+                  Ainda não há alunos inscritos. Use "Inscrever aluno" para começar.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
