@@ -8,6 +8,7 @@
     "start": "next start",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "admin:reset": "tsx prisma/reset-admin.ts",
     "test": "tsx tests/regras.test.ts"
   },
   "prisma": {
