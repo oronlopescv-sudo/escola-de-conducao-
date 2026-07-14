@@ -4,8 +4,17 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { criarToken } from "@/lib/auth";
+import { rateLimit } from "@/lib/ratelimit";
 
 export async function POST(req: Request) {
+  // Rate limit: 10 tentativas por IP a cada 15 minutos (anti brute-force)
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  if (!rateLimit(`login:${ip}`, 10, 15 * 60 * 1000)) {
+    return NextResponse.json(
+      { erro: "Demasiadas tentativas. Tente novamente em 15 minutos." },
+      { status: 429 }
+    );
+  }
 
   let body: { email?: string; senha?: string };
   try {
