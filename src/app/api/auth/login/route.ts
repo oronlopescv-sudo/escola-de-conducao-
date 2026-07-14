@@ -12,14 +12,14 @@ const DEMO_USERS = [
     id: "admin-001",
     email: "admin@autoescola.cv",
     nome: "Administrador",
-    senha: "$2a$10$8M8RR7aSI0LVLsXsKJN.Ue2XW1oJjGK3NmR8vJK8Z9Z9Z9Z9Z9Z9",
+    senha: "$2a$10$LHkHwCYGId4cVYBY.cZXiOpJW0HTZlsvs64sNwLH3DXvS74FchHUW",
     role: "ADMIN",
   },
   {
     id: "aluno-001",
     email: "aluno@autoescola.cv",
     nome: "Aluno Demonstração",
-    senha: "$2a$10$8M8RR7aSI0LVLsXsKJN.Ue2XW1oJjGK3NmR8vJK8Z9Z9Z9Z9Z9Z9",
+    senha: "$2a$10$aR28jhHAapJV6aWvjstf2.bDGFR3HqttrPfYWMHjQCOpz4JthBZ5y",
     role: "ALUNO",
   },
 ];
