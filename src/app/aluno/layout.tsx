@@ -5,6 +5,8 @@ const itens = [
   { href: "/aluno/modulos", label: "Módulos e Vídeos" },
   { href: "/aluno/simulado", label: "Fazer Simulado" },
   { href: "/aluno/resultados", label: "Os meus Resultados" },
+  { href: "/aluno/agendamentos", label: "Minhas Aulas" },
+  { href: "/aluno/perfil", label: "Meu Perfil" },
 ];
 
 export default function AlunoLayout({ children }: { children: React.ReactNode }) {
