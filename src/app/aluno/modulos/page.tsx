@@ -14,9 +14,23 @@ type Modulo = {
 
 export default function ModulosAluno() {
   const [modulos, setModulos] = useState<Modulo[]>([]);
+  const [erro, setErro] = useState("");
+
   useEffect(() => {
-    fetch("/api/modulos").then((r) => r.json()).then(setModulos);
+    fetch("/api/modulos")
+      .then((r) => {
+        if (!r.ok) throw new Error(`Erro ${r.status}`);
+        return r.json();
+      })
+      .then(setModulos)
+      .catch((e) => {
+        console.error("❌ Módulos erro:", e);
+        setErro("Erro ao carregar módulos");
+      });
   }, []);
+
+  if (erro) return <p className="text-sm text-stop">{erro}</p>;
+  if (modulos.length === 0) return <p className="text-sm text-asfalto/50">A carregar módulos...</p>;
 
   return (
     <div>

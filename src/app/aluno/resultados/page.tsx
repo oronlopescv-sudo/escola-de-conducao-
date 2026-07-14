@@ -8,10 +8,22 @@ type Dados = {
 
 export default function Resultados() {
   const [d, setD] = useState<Dados | null>(null);
+  const [erro, setErro] = useState("");
+
   useEffect(() => {
-    fetch("/api/dashboard").then((r) => r.json()).then(setD);
+    fetch("/api/dashboard")
+      .then((r) => {
+        if (!r.ok) throw new Error(`Erro ${r.status}`);
+        return r.json();
+      })
+      .then(setD)
+      .catch((e) => {
+        console.error("❌ Resultados erro:", e);
+        setErro("Erro ao carregar resultados");
+      });
   }, []);
 
+  if (erro) return <p className="text-sm text-stop">{erro}</p>;
   if (!d) return <p className="text-sm text-asfalto/50">A carregar...</p>;
 
   return (

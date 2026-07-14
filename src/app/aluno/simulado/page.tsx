@@ -22,20 +22,32 @@ export default function Simulado() {
     setLoading(true);
     setResultado(null);
     setRespostas({});
-    const r = await fetch("/api/simulados?n=20");
-    setQuestoes(await r.json());
+    try {
+      const r = await fetch("/api/simulados?n=20");
+      if (!r.ok) throw new Error(`Erro ${r.status}`);
+      setQuestoes(await r.json());
+    } catch (e: any) {
+      console.error("❌ Simulado erro:", e);
+      alert("Erro ao carregar simulado");
+    }
     setLoading(false);
   }
 
   async function submeter() {
-    const lista = questoes!.map((q) => ({ questaoId: q.id, resposta: respostas[q.id] || "" }));
-    const r = await fetch("/api/simulados", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ respostas: lista }),
-    });
-    if (r.ok) setResultado(await r.json());
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    try {
+      const lista = questoes!.map((q) => ({ questaoId: q.id, resposta: respostas[q.id] || "" }));
+      const r = await fetch("/api/simulados", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ respostas: lista }),
+      });
+      if (!r.ok) throw new Error(`Erro ${r.status}`);
+      setResultado(await r.json());
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (e: any) {
+      console.error("❌ Submit erro:", e);
+      alert("Erro ao submeter simulado");
+    }
   }
 
   const mapaDetalhe = new Map(resultado?.detalhes.map((d) => [d.questaoId, d]));

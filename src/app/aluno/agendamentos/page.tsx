@@ -17,16 +17,26 @@ type Agendamento = {
 export default function MinhasAulas() {
   const [aulas, setAulas] = useState<Agendamento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
     fetch("/api/agendamentos")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`Erro ${r.status}`);
+        return r.json();
+      })
       .then((d) => {
         setAulas(Array.isArray(d) ? d : []);
+        setLoading(false);
+      })
+      .catch((e) => {
+        console.error("❌ Agendamentos erro:", e);
+        setErro("Erro ao carregar agendamentos");
         setLoading(false);
       });
   }, []);
 
+  if (erro) return <p className="text-sm text-stop">{erro}</p>;
   if (loading) return <p className="text-sm text-asfalto/50">A carregar...</p>;
   if (aulas.length === 0)
     return (
