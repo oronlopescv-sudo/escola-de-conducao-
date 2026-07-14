@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
 import { sessaoAtual } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 export async function GET() {
+  const cookiesList = cookies();
+  const token = cookiesList.get("token")?.value;
+  console.log("🔍 Dashboard - Token presente:", !!token);
+
   const s = await sessaoAtual();
-  if (!s) return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
+  if (!s) {
+    console.log("❌ sessaoAtual() retornou null");
+    return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
+  }
 
   if (s.role === "ADMIN") {
     // Mock dashboard admin
