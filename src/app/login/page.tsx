@@ -25,8 +25,9 @@ export default function Login() {
       return;
     }
     const d = await r.json();
-    router.push(d.role === "ADMIN" ? "/admin" : "/aluno");
-    router.refresh();
+    if (d.success) {
+      router.push(d.role === "ADMIN" ? "/admin" : "/aluno");
+    }
   }
 
   return (
