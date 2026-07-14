@@ -13,20 +13,30 @@ export default function Login() {
     e.preventDefault();
     setErro("");
     setLoading(true);
-    const r = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, senha }),
-    });
-    setLoading(false);
-    if (!r.ok) {
+    try {
+      const r = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha }),
+      });
+      setLoading(false);
+      if (!r.ok) {
+        const d = await r.json();
+        setErro(d.erro || "Falha no início de sessão.");
+        return;
+      }
       const d = await r.json();
-      setErro(d.erro || "Falha no início de sessão.");
-      return;
-    }
-    const d = await r.json();
-    if (d.success) {
-      router.push(d.role === "ADMIN" ? "/admin" : "/aluno");
+      console.log("✅ Login response:", d);
+      if (d.success) {
+        console.log("🔄 Redirecionando para:", d.role === "ADMIN" ? "/admin" : "/aluno");
+        router.push(d.role === "ADMIN" ? "/admin" : "/aluno");
+      } else {
+        setErro("Resposta inválida do servidor");
+      }
+    } catch (err: any) {
+      setLoading(false);
+      console.error("❌ Erro no login:", err);
+      setErro(err.message || "Erro desconhecido");
     }
   }
 
