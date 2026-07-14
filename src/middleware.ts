@@ -36,6 +36,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/aluno/:path*"],
-  // Exclude /api routes from authentication check
+  matcher: ["/admin/:path*", "/aluno/:path*", "/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
