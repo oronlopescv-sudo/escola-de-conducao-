@@ -1,32 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🚀 Starting database setup...');
+    console.log('🚀 Setup: Creating users...');
 
-    // Run prisma db push
-    console.log('📋 Running: npx prisma db push...');
-    try {
-      const { stdout: pushOutput } = await execAsync('npx prisma db push --skip-generate');
-      console.log('✅ Prisma db push completed');
-      console.log(pushOutput);
-    } catch (error: any) {
-      console.log('⚠️ Prisma db push output:', error.stdout || error.message);
-    }
+    // Admin user
+    const adminHash = await bcrypt.hash('admin123', 10);
+    const admin = await prisma.user.upsert({
+      where: { email: 'admin@autoescola.cv' },
+      update: {},
+      create: {
+        nome: 'Administrador',
+        email: 'admin@autoescola.cv',
+        senha: adminHash,
+        role: 'ADMIN',
+      },
+    });
+    console.log('✅ Admin created:', admin.email);
 
-    // Run seed
-    console.log('🌱 Running: npm run db:seed...');
-    try {
-      const { stdout: seedOutput } = await execAsync('npm run db:seed');
-      console.log('✅ Seed completed');
-      console.log(seedOutput);
-    } catch (error: any) {
-      console.log('⚠️ Seed output:', error.stdout || error.message);
-    }
+    // Student user
+    const studentHash = await bcrypt.hash('aluno123', 10);
+    const studentUser = await prisma.user.upsert({
+      where: { email: 'aluno@autoescola.cv' },
+      update: {},
+      create: {
+        nome: 'Aluno Demonstração',
+        email: 'aluno@autoescola.cv',
+        senha: studentHash,
+        role: 'ALUNO',
+      },
+    });
+    console.log('✅ Student created:', studentUser.email);
+
+    // Student record
+    await prisma.aluno.upsert({
+      where: { userId: studentUser.id },
+      update: {},
+      create: {
+        userId: studentUser.id,
+        categoria: 'B',
+        telefone: '9XX XX XX',
+      },
+    });
+    console.log('✅ Setup complete!');
 
     return NextResponse.json({
       success: true,
