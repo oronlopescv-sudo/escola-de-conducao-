@@ -1,69 +1,42 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { SignJWT } from "jose";
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "dev-secret-mudar"
-);
-
-// Demo users (hardcoded for now)
-const DEMO_USERS = [
-  {
-    id: "admin-001",
-    email: "admin@autoescola.cv",
-    nome: "Administrador",
-    senha: "$2a$10$LHkHwCYGId4cVYBY.cZXiOpJW0HTZlsvs64sNwLH3DXvS74FchHUW",
-    role: "ADMIN",
-  },
-  {
-    id: "aluno-001",
-    email: "aluno@autoescola.cv",
-    nome: "Aluno Demonstração",
-    senha: "$2a$10$aR28jhHAapJV6aWvjstf2.bDGFR3HqttrPfYWMHjQCOpz4JthBZ5y",
-    role: "ALUNO",
-  },
-];
+import { prisma } from "@/lib/prisma";
+import { criarToken } from "@/lib/auth";
+import { rateLimit } from "@/lib/ratelimit";
 
 export async function POST(req: Request) {
-  try {
-    const { email, senha } = await req.json();
-
-    if (!email || !senha) {
-      return NextResponse.json(
-        { erro: "Email e palavra-passe são obrigatórios." },
-        { status: 400 }
-      );
-    }
-
-    const user = DEMO_USERS.find(
-      (u) => u.email === email.toLowerCase().trim()
+  // Rate limit: 10 tentativas por IP a cada 15 minutos (anti brute-force)
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  if (!rateLimit(`login:${ip}`, 10, 15 * 60 * 1000)) {
+    return NextResponse.json(
+      { erro: "Demasiadas tentativas. Tente novamente em 15 minutos." },
+      { status: 429 }
     );
+  }
 
-    if (!user) {
-      return NextResponse.json(
-        { erro: "Email ou palavra-passe incorretos." },
-        { status: 401 }
-      );
+  let body: { email?: string; senha?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ erro: "Pedido inválido." }, { status: 400 });
+  }
+  const { email, senha } = body;
+  if (typeof email !== "string" || typeof senha !== "string" || !email || !senha) {
+    return NextResponse.json({ erro: "Email e palavra-passe são obrigatórios." }, { status: 400 });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+    // Comparação sempre executada para tempo constante (evita enumeração por timing)
+    const hashDummy = "$2a$10$C6UzMDM.H6dfI/f/IKcEeO7ZKo8dY1vJ0f0eYhN0y1yQdCkq2eD2a";
+    const ok = await bcrypt.compare(senha, user?.senha || hashDummy);
+    if (!user || !ok) {
+      return NextResponse.json({ erro: "Email ou palavra-passe incorretos." }, { status: 401 });
     }
 
-    const passwordMatch = await bcrypt.compare(senha, user.senha);
-    if (!passwordMatch) {
-      return NextResponse.json(
-        { erro: "Email ou palavra-passe incorretos." },
-        { status: 401 }
-      );
-    }
-
-    // Create JWT token
-    const token = await new SignJWT({
-      userId: user.id,
-      role: user.role,
-      nome: user.nome,
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("7d")
-      .sign(JWT_SECRET);
-
+    const token = await criarToken({ userId: user.id, role: user.role, nome: user.nome });
     const res = NextResponse.json({ role: user.role, success: true });
     res.cookies.set("token", token, {
       httpOnly: true,
@@ -72,13 +45,9 @@ export async function POST(req: Request) {
       maxAge: 60 * 60 * 24 * 7,
       path: "/",
     });
-
     return res;
   } catch (error: any) {
     console.error("Login error:", error);
-    return NextResponse.json(
-      { erro: "Erro no servidor" },
-      { status: 500 }
-    );
+    return NextResponse.json({ erro: "Erro no servidor" }, { status: 500 });
   }
 }

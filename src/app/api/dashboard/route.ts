@@ -1,41 +1,76 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { sessaoAtual } from "@/lib/auth";
-import { cookies } from "next/headers";
 
 export async function GET() {
-  const cookiesList = cookies();
-  const token = cookiesList.get("token")?.value;
-  console.log("🔍 Dashboard - Token presente:", !!token);
+  try {
+    const s = await sessaoAtual();
+    if (!s) return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
 
-  const s = await sessaoAtual();
-  if (!s) {
-    console.log("❌ sessaoAtual() retornou null");
-    return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
-  }
+    if (s.role === "ADMIN") {
+      const [totalAlunos, ativos, totalQuestoes, totalModulos, tentativas] = await Promise.all([
+        prisma.aluno.count(),
+        prisma.aluno.count({ where: { ativo: true } }),
+        prisma.questao.count(),
+        prisma.modulo.count(),
+        prisma.tentativa.findMany({ select: { total: true, acertos: true } }),
+      ]);
 
-  if (s.role === "ADMIN") {
-    // Mock dashboard admin
+      const totalTentativas = tentativas.length;
+      const mediaAproveitamento =
+        totalTentativas === 0
+          ? 0
+          : Math.round(
+              (tentativas.reduce((soma, t) => soma + t.acertos / t.total, 0) / totalTentativas) * 100
+            );
+      const taxaAprovacao =
+        totalTentativas === 0
+          ? 0
+          : Math.round(
+              (tentativas.filter((t) => t.acertos / t.total >= 0.8).length / totalTentativas) * 100
+            );
+
+      return NextResponse.json({
+        totalAlunos,
+        ativos,
+        totalQuestoes,
+        totalModulos,
+        totalTentativas,
+        mediaAproveitamento,
+        taxaAprovacao,
+      });
+    }
+
+    // Dashboard do aluno
+    const aluno = await prisma.aluno.findUnique({ where: { userId: s.userId } });
+    if (!aluno) return NextResponse.json({ erro: "Aluno não encontrado" }, { status: 404 });
+
+    const [totalModulos, modulosConcluidos, tentativas] = await Promise.all([
+      prisma.modulo.count(),
+      prisma.moduloProgresso.count({ where: { alunoId: aluno.id, concluido: true } }),
+      prisma.tentativa.findMany({
+        where: { alunoId: aluno.id },
+        orderBy: { criadaEm: "desc" },
+        select: { id: true, criadaEm: true, total: true, acertos: true },
+      }),
+    ]);
+
+    const melhorResultado =
+      tentativas.length === 0
+        ? 0
+        : Math.max(...tentativas.map((t) => Math.round((t.acertos / t.total) * 100)));
+
     return NextResponse.json({
-      totalAlunos: 45,
-      ativos: 32,
-      totalQuestoes: 500,
-      totalModulos: 23,
-      totalTentativas: 128,
-      mediaAproveitamento: 72,
-      taxaAprovacao: 68,
+      categoria: aluno.categoria,
+      modulosConcluidos,
+      totalModulos,
+      melhorResultado,
+      tentativas,
     });
+  } catch (error: any) {
+    console.error("❌ Dashboard erro:", error);
+    return NextResponse.json({ erro: "Erro ao carregar dashboard" }, { status: 500 });
   }
-
-  // Mock dashboard aluno
-  return NextResponse.json({
-    categoria: "B",
-    modulosConcluidos: 8,
-    totalModulos: 23,
-    melhorResultado: 78,
-    tentativas: [
-      { id: "t1", criadaEm: new Date().toISOString(), total: 50, acertos: 39 },
-      { id: "t2", criadaEm: new Date(Date.now() - 86400000).toISOString(), total: 50, acertos: 35 },
-      { id: "t3", criadaEm: new Date(Date.now() - 172800000).toISOString(), total: 50, acertos: 40 },
-    ],
-  });
 }
