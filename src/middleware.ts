@@ -27,4 +27,7 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/admin/:path*", "/aluno/:path*"] };
+export const config = {
+  matcher: ["/admin/:path*", "/aluno/:path*"],
+  // Exclude /api routes from authentication check
+};
