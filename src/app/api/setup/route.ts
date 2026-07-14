@@ -6,12 +6,6 @@ const execAsync = promisify(exec);
 
 export async function POST(request: NextRequest) {
   try {
-    // Security: check for a secret token
-    const token = request.headers.get('x-setup-token');
-    if (token !== process.env.SETUP_TOKEN) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     console.log('🚀 Starting database setup...');
 
     // Run prisma db push
