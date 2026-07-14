@@ -51,7 +51,7 @@ export default function Login() {
             <input className="input" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required />
           </div>
           {erro && <p className="text-sm text-stop">{erro}</p>}
-          <button className="btn-primary w-full" disabled={loading}>
+          <button type="submit" className="btn-primary w-full" disabled={loading}>
             {loading ? "A entrar..." : "Entrar"}
           </button>
         </form>
