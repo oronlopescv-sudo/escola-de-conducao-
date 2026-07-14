@@ -1,7 +1,4 @@
-export const dynamic = "force-dynamic";
-
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { sessaoAtual } from "@/lib/auth";
 
 export async function GET() {
@@ -9,54 +6,28 @@ export async function GET() {
   if (!s) return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
 
   if (s.role === "ADMIN") {
-    const [totalAlunos, ativos, totalQuestoes, totalModulos, tentativas] = await Promise.all([
-      prisma.aluno.count(),
-      prisma.aluno.count({ where: { ativo: true } }),
-      prisma.questao.count(),
-      prisma.modulo.count(),
-      prisma.tentativa.findMany({ orderBy: { criadaEm: "desc" }, take: 200 }),
-    ]);
-    const mediaAproveitamento =
-      tentativas.length > 0
-        ? Math.round((tentativas.reduce((a: number, t: { acertos: number; total: number }) => a + t.acertos / t.total, 0) / tentativas.length) * 100)
-        : 0;
-    const aprovariam = tentativas.filter((t: { acertos: number; total: number }) => t.acertos / t.total >= 0.8).length;
-    const taxaAprovacao = tentativas.length ? Math.round((aprovariam / tentativas.length) * 100) : 0;
+    // Mock dashboard admin
     return NextResponse.json({
-      totalAlunos,
-      ativos,
-      totalQuestoes,
-      totalModulos,
-      totalTentativas: tentativas.length,
-      mediaAproveitamento,
-      taxaAprovacao,
+      totalAlunos: 45,
+      ativos: 32,
+      totalQuestoes: 500,
+      totalModulos: 23,
+      totalTentativas: 128,
+      mediaAproveitamento: 72,
+      taxaAprovacao: 68,
     });
   }
 
-  // Aluno
-  const aluno = await prisma.aluno.findUnique({
-    where: { userId: s.userId },
-    include: {
-      progresso: { where: { concluido: true } },
-      tentativas: { orderBy: { criadaEm: "desc" }, take: 20 },
-    },
-  });
-  const totalModulos = await prisma.modulo.count();
-  if (!aluno) return NextResponse.json({ erro: "Aluno não encontrado" }, { status: 404 });
-  const melhor = aluno.tentativas.reduce(
-    (max: number, t: { acertos: number; total: number }) => Math.max(max, Math.round((t.acertos / t.total) * 100)),
-    0
-  );
+  // Mock dashboard aluno
   return NextResponse.json({
-    categoria: aluno.categoria,
-    modulosConcluidos: aluno.progresso.length,
-    totalModulos,
-    tentativas: aluno.tentativas.map((t: { id: string; criadaEm: Date; total: number; acertos: number }) => ({
-      id: t.id,
-      criadaEm: t.criadaEm,
-      total: t.total,
-      acertos: t.acertos,
-    })),
-    melhorResultado: melhor,
+    categoria: "B",
+    modulosConcluidos: 8,
+    totalModulos: 23,
+    melhorResultado: 78,
+    tentativas: [
+      { id: "t1", criadaEm: new Date().toISOString(), total: 50, acertos: 39 },
+      { id: "t2", criadaEm: new Date(Date.now() - 86400000).toISOString(), total: 50, acertos: 35 },
+      { id: "t3", criadaEm: new Date(Date.now() - 172800000).toISOString(), total: 50, acertos: 40 },
+    ],
   });
 }
