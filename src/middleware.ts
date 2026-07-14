@@ -14,10 +14,18 @@ export async function middleware(req: NextRequest) {
     try {
       const { payload } = await jwtVerify(token, getSecret());
       sessao = payload;
-    } catch {}
+      console.log("✅ Token verificado:", { role: sessao.role, userId: sessao.userId });
+    } catch (err: any) {
+      console.error("❌ Erro ao verificar token:", err.message);
+    }
+  } else {
+    console.log("⚠️ Sem token no cookie");
   }
 
-  if (!sessao) return NextResponse.redirect(new URL("/login", req.url));
+  if (!sessao) {
+    console.log("🔄 Sem sessão, redirecionando para /login");
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 
   if (pathname.startsWith("/admin") && sessao.role !== "ADMIN")
     return NextResponse.redirect(new URL("/aluno", req.url));
