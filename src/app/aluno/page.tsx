@@ -12,10 +12,24 @@ type Dados = {
 
 export default function ProgressoAluno() {
   const [d, setD] = useState<Dados | null>(null);
+  const [erro, setErro] = useState("");
+
   useEffect(() => {
-    fetch("/api/dashboard").then((r) => r.json()).then(setD);
+    fetch("/api/dashboard")
+      .then((r) => {
+        if (!r.ok) {
+          throw new Error(`API error: ${r.status}`);
+        }
+        return r.json();
+      })
+      .then(setD)
+      .catch((err) => {
+        console.error("❌ Dashboard fetch failed:", err);
+        setErro("Erro ao carregar dashboard: " + err.message);
+      });
   }, []);
 
+  if (erro) return <p className="text-sm text-stop">{erro}</p>;
   if (!d) return <p className="text-sm text-asfalto/50">A carregar...</p>;
 
   const pctModulos = Math.round((d.modulosConcluidos / d.totalModulos) * 100);
