@@ -25,6 +25,14 @@ COPY --from=builder --chown=app:app /app/prisma ./prisma
 USER app
 EXPOSE 3000
 ENV PORT=3000 HOSTNAME=0.0.0.0
+
+# Valores por omissão de produção. Podem (e devem) ser sobrescritos pelas variáveis
+# de ambiente configuradas no EasyPanel — estas só garantem que a app arranque
+# mesmo sem configuração manual. O host sitenext_escolacv só é alcançável dentro
+# da rede interna do EasyPanel, não pela internet.
+ENV DATABASE_URL="mysql://mysqlescola:escolaconducao@sitenext_escolacv:3306/ESCOLA"
+ENV JWT_SECRET="UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3gZv1/u2oq"
+
 # Sincroniza o schema com a base de dados antes de arrancar (cria tabelas novas,
 # não apaga dados). Se falhar (ex.: DB ainda a arrancar), o servidor arranca na mesma.
 CMD ["sh", "-c", "node node_modules/prisma/build/index.js db push --skip-generate || echo 'AVISO: prisma db push falhou'; node server.js"]
