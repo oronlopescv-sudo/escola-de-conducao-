@@ -14,16 +14,12 @@ export async function middleware(req: NextRequest) {
     try {
       const { payload } = await jwtVerify(token, getSecret());
       sessao = payload;
-      console.log("✅ Token verificado:", { role: sessao.role, userId: sessao.userId });
-    } catch (err: any) {
-      console.error("❌ Erro ao verificar token:", err.message);
+    } catch {
+      // token inválido ou expirado — trata como sem sessão
     }
-  } else {
-    console.log("⚠️ Sem token no cookie");
   }
 
   if (!sessao) {
-    console.log("🔄 Sem sessão, redirecionando para /login");
     return NextResponse.redirect(new URL("/login", req.url));
   }
 

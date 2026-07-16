@@ -7,9 +7,11 @@ type Aluno = {
   email: string;
   telefone: string;
   bi: string;
-  categoria: "A" | "B" | "C";
+  categoria: string;
   dataInscricao: string;
 };
+
+const categorias = ["A", "B", "C", "D", "F", "A1", "B1", "C1", "D1", "BE", "CE", "DE"];
 
 export default function PerfilAluno() {
   const [aluno, setAluno] = useState<Aluno | null>(null);
@@ -19,12 +21,16 @@ export default function PerfilAluno() {
 
   useEffect(() => {
     fetch("/api/alunos/perfil")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`Erro ${r.status}`);
+        return r.json();
+      })
       .then((d) => {
         setAluno(d);
         setForm(d);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   async function salvar() {
@@ -45,6 +51,7 @@ export default function PerfilAluno() {
   }
 
   if (loading) return <p className="text-sm text-asfalto/50">A carregar...</p>;
+  if (!aluno) return <p className="text-sm text-stop">Erro ao carregar o perfil. Atualize a página.</p>;
 
   return (
     <div className="max-w-2xl">
@@ -96,12 +103,12 @@ export default function PerfilAluno() {
             <label className="label">Categoria</label>
             <select
               value={form.categoria || "B"}
-              onChange={(e) => setForm({ ...form, categoria: e.target.value as any })}
-              className="w-full px-3 py-2 border border-asfalto/20 rounded-lg text-sm"
+              onChange={(e) => setForm({ ...form, categoria: e.target.value })}
+              className="w-full px-3 py-2 border border-asfalto/20 rounded-lg text-sm bg-white"
             >
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
+              {categorias.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
           </div>
         </div>

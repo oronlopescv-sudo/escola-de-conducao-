@@ -13,10 +13,18 @@ type Stats = {
 
 export default function AdminDashboard() {
   const [s, setS] = useState<Stats | null>(null);
+  const [erro, setErro] = useState("");
   useEffect(() => {
-    fetch("/api/dashboard").then((r) => r.json()).then(setS);
+    fetch("/api/dashboard")
+      .then((r) => {
+        if (!r.ok) throw new Error(`Erro ${r.status}`);
+        return r.json();
+      })
+      .then(setS)
+      .catch(() => setErro("Erro ao carregar o painel. Atualize a página."));
   }, []);
 
+  if (erro) return <p className="text-sm text-stop">{erro}</p>;
   if (!s) return <p className="text-sm text-asfalto/50">A carregar...</p>;
 
   const cards = [

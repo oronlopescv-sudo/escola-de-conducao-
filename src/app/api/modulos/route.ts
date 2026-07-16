@@ -3,11 +3,13 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sessaoAtual } from "@/lib/auth";
+import { garantirDadosBase } from "@/lib/bootstrap";
 
 export async function GET() {
   try {
     const s = await sessaoAtual();
     if (!s) return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
+    await garantirDadosBase();
 
     const modulos = await prisma.modulo.findMany({
       orderBy: { numero: "asc" },

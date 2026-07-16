@@ -14,6 +14,7 @@ type Modulo = {
 
 export default function ModulosAluno() {
   const [modulos, setModulos] = useState<Modulo[]>([]);
+  const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
 
   useEffect(() => {
@@ -22,15 +23,20 @@ export default function ModulosAluno() {
         if (!r.ok) throw new Error(`Erro ${r.status}`);
         return r.json();
       })
-      .then(setModulos)
-      .catch((e) => {
-        console.error("❌ Módulos erro:", e);
-        setErro("Erro ao carregar módulos");
+      .then((d) => {
+        setModulos(Array.isArray(d) ? d : []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setErro("Erro ao carregar módulos. Atualize a página.");
+        setLoading(false);
       });
   }, []);
 
   if (erro) return <p className="text-sm text-stop">{erro}</p>;
-  if (modulos.length === 0) return <p className="text-sm text-asfalto/50">A carregar módulos...</p>;
+  if (loading) return <p className="text-sm text-asfalto/50">A carregar módulos...</p>;
+  if (modulos.length === 0)
+    return <p className="text-sm text-asfalto/50">Ainda não há módulos disponíveis. Contacte a escola.</p>;
 
   return (
     <div>

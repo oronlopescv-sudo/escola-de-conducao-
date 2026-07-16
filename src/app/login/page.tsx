@@ -26,17 +26,15 @@ export default function Login() {
         return;
       }
       const d = await r.json();
-      console.log("✅ Login response:", d);
       if (d.success) {
-        console.log("🔄 Redirecionando para:", d.role === "ADMIN" ? "/admin" : "/aluno");
-        router.push(d.role === "ADMIN" ? "/admin" : "/aluno");
+        // Navegação completa para garantir que o middleware lê o cookie novo
+        window.location.href = d.role === "ADMIN" ? "/admin" : "/aluno";
       } else {
         setErro("Resposta inválida do servidor");
       }
     } catch (err: any) {
       setLoading(false);
-      console.error("❌ Erro no login:", err);
-      setErro(err.message || "Erro desconhecido");
+      setErro(err.message || "Erro de ligação. Tente novamente.");
     }
   }
 

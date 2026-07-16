@@ -1,45 +1,57 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { sessaoAtual } from "@/lib/auth";
 
-// Mock data
-const agendamentos = [
-  {
-    id: "agd-001",
-    alunoId: "aluno-001",
-    alunoNome: "Aluno Demonstração",
-    tipo: "Teórica",
-    data: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 dias
-    hora: "09:00",
-    duracao: 90,
-    local: "Sala de Aula - Praia",
-    instrutorNome: "João Silva",
-    status: "Confirmado",
-  },
-  {
-    id: "agd-002",
-    alunoId: "aluno-001",
-    alunoNome: "Aluno Demonstração",
-    tipo: "Prática",
-    data: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 dias
-    hora: "14:00",
-    duracao: 60,
-    local: "Circuito Fechado - Santa Maria",
-    instrutorNome: "Maria Costa",
-    status: "Confirmado",
-  },
-];
+type AgendamentoDb = {
+  id: string;
+  alunoId: string;
+  tipo: string;
+  data: Date;
+  hora: string;
+  duracao: number;
+  local: string | null;
+  instrutorNome: string | null;
+  status: string;
+  aluno: { user: { nome: string } };
+};
+
+function serializar(a: AgendamentoDb) {
+  return {
+    id: a.id,
+    alunoId: a.alunoId,
+    alunoNome: a.aluno.user.nome,
+    tipo: a.tipo,
+    data: a.data,
+    hora: a.hora,
+    duracao: a.duracao,
+    local: a.local || "",
+    instrutorNome: a.instrutorNome || "",
+    status: a.status,
+  };
+}
 
 export async function GET() {
   const s = await sessaoAtual();
   if (!s) return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
 
   if (s.role === "ADMIN") {
-    return NextResponse.json(agendamentos);
+    const todos = await prisma.agendamento.findMany({
+      include: { aluno: { select: { user: { select: { nome: true } } } } },
+      orderBy: [{ data: "asc" }, { hora: "asc" }],
+    });
+    return NextResponse.json(todos.map(serializar));
   }
 
-  // Aluno vê apenas seus agendamentos
-  const meusAgendamentos = agendamentos.filter((a) => a.alunoId === s.userId);
-  return NextResponse.json(meusAgendamentos);
+  const aluno = await prisma.aluno.findUnique({ where: { userId: s.userId } });
+  if (!aluno) return NextResponse.json([]);
+  const meus = await prisma.agendamento.findMany({
+    where: { alunoId: aluno.id },
+    include: { aluno: { select: { user: { select: { nome: true } } } } },
+    orderBy: [{ data: "asc" }, { hora: "asc" }],
+  });
+  return NextResponse.json(meus.map(serializar));
 }
 
 export async function POST(req: Request) {
@@ -48,21 +60,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ erro: "Apenas admin pode criar agendamentos" }, { status: 403 });
   }
 
-  const { alunoId, alunoNome, tipo, data, hora, duracao, local, instrutorNome } = await req.json();
+  const b = await req.json();
+  if (!b.alunoId || !b.data || !b.hora) {
+    return NextResponse.json({ erro: "Aluno, data e hora são obrigatórios." }, { status: 400 });
+  }
 
-  const novo = {
-    id: `agd-${Date.now()}`,
-    alunoId,
-    alunoNome,
-    tipo,
-    data,
-    hora,
-    duracao,
-    local,
-    instrutorNome,
-    status: "Confirmado",
-  };
+  const aluno = await prisma.aluno.findUnique({ where: { id: b.alunoId } });
+  if (!aluno) return NextResponse.json({ erro: "Aluno não encontrado." }, { status: 404 });
 
-  agendamentos.push(novo);
-  return NextResponse.json(novo, { status: 201 });
+  const novo = await prisma.agendamento.create({
+    data: {
+      alunoId: b.alunoId,
+      tipo: b.tipo === "Prática" ? "Prática" : "Teórica",
+      data: new Date(b.data),
+      hora: String(b.hora),
+      duracao: Number(b.duracao) > 0 ? Number(b.duracao) : 60,
+      local: b.local || null,
+      instrutorNome: b.instrutorNome || null,
+    },
+    include: { aluno: { select: { user: { select: { nome: true } } } } },
+  });
+  return NextResponse.json(serializar(novo), { status: 201 });
 }

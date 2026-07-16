@@ -66,7 +66,15 @@ export default function MinhasAulas() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold">{aula.tipo}</span>
-                    <span className={`text-xs px-2 py-1 rounded ${aula.status === "Confirmado" ? "bg-verde/20 text-verde" : "bg-asfalto/20"}`}>
+                    <span
+                      className={`text-xs px-2 py-1 rounded ${
+                        aula.status === "Confirmado"
+                          ? "bg-verde/20 text-verde"
+                          : aula.status === "Cancelado"
+                          ? "bg-stop/20 text-stop"
+                          : "bg-asfalto/20"
+                      }`}
+                    >
                       {aula.status}
                     </span>
                   </div>
