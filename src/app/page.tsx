@@ -3,8 +3,13 @@ import { redirect } from "next/navigation";
 import { sessaoAtual } from "@/lib/auth";
 
 export default async function Home() {
-  const s = await sessaoAtual();
-  if (s) redirect(s.role === "ADMIN" ? "/admin" : "/aluno");
+  try {
+    const s = await sessaoAtual();
+    if (s) redirect(s.role === "ADMIN" ? "/admin" : "/aluno");
+  } catch (e) {
+    // Se falhar a verificação de sessão (ex: BD indisponível), mostra landing page
+    console.error("Erro ao verificar sessão:", e);
+  }
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-faixa text-asfalto">
