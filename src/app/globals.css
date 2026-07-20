@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fjalla+One&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -46,4 +46,35 @@ body {
 }
 .label {
   @apply block text-xs font-semibold uppercase tracking-wide text-asfalto/60 mb-1;
+}
+
+/* Landing page: faixa de estrada animada */
+.estrada-strip-line {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    #f7b500 0 28px,
+    transparent 28px 56px
+  );
+  animation: estrada-scroll 1.6s linear infinite;
+}
+@keyframes estrada-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-56px); }
+}
+
+/* Landing page: marquee de destaques */
+.marquee {
+  animation: marquee-scroll 22s linear infinite;
+}
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .estrada-strip-line,
+  .marquee {
+    animation: none;
+  }
 }

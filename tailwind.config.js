@@ -13,8 +13,9 @@ module.exports = {
         verde: "#2E9E5B",
       },
       fontFamily: {
-        display: ["'Archivo'", "sans-serif"],
-        body: ["'Inter'", "sans-serif"],
+        display: ["'Fjalla One'", "sans-serif"],
+        body: ["'Work Sans'", "sans-serif"],
+        mono: ["'Space Mono'", "monospace"],
       },
     },
   },
