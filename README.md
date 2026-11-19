@@ -14,7 +14,7 @@ Next.js 14 (App Router, TypeScript) · Prisma · PostgreSQL · JWT (cookie httpO
 cp .env.example .env        # éditer DATABASE_URL et JWT_SECRET
 npm install
 npx prisma db push          # crée les tables
-npm run db:seed             # 23 modules + 40+ questions + comptes démo
+npm run db:seed             # 23 modules + 42 questions
 npm run dev
 ```
 ## Comptes et variables d'environnement
@@ -39,7 +39,7 @@ Sur EasyPanel : créer un service PostgreSQL + un service App pointant vers ce d
 | `npm run dev` | développement |
 | `npm run build` | build de production (inclut prisma generate) |
 | `npm run db:push` | synchroniser le schéma avec la base de données |
-| `npm run db:seed` | alimenter les modules, les questions et les comptes démo |
+| `npm run db:seed` | alimenter les modules et les questions |
 | `npm test` | tests des règles métier |
 
 ## Sécurité
