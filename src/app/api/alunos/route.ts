@@ -39,12 +39,21 @@ export async function POST(req: Request) {
   const existe = await prisma.user.findUnique({ where: { email } });
   if (existe) return NextResponse.json({ erro: "Un utilisateur avec cet e-mail existe déjà." }, { status: 409 });
 
-  // Validation de l'âge minimal (DL 4/2005, art. 122º)
-  if (b.dataNascimento && b.categoria) {
-    const v = validarIdadeCategoria(new Date(b.dataNascimento), b.categoria);
+  const CATEGORIAS = ["A", "B", "C", "D", "F", "A1", "B1", "C1", "D1", "BE", "CE", "DE"];
+  const categoria = b.categoria ? String(b.categoria) : "B";
+  if (!CATEGORIAS.includes(categoria))
+    return NextResponse.json({ erro: "Catégorie invalide." }, { status: 400 });
+
+  let dataNascimento: Date | null = null;
+  if (b.dataNascimento) {
+    dataNascimento = new Date(b.dataNascimento);
+    if (isNaN(dataNascimento.getTime()))
+      return NextResponse.json({ erro: "Date de naissance invalide." }, { status: 400 });
+    // Validation de l'âge minimal (DL 4/2005, art. 122º) — sempre que existir a data
+    const v = validarIdadeCategoria(dataNascimento, categoria);
     if (!v.valido)
       return NextResponse.json(
-        { erro: `L'âge minimal pour la catégorie ${b.categoria} est de ${v.minima} ans (l'élève a ${v.idade} ans).` },
+        { erro: `L'âge minimal pour la catégorie ${categoria} est de ${v.minima} ans (l'élève a ${v.idade} ans).` },
         { status: 400 }
       );
   }
@@ -52,29 +61,33 @@ export async function POST(req: Request) {
   // L'admin peut indiquer un mot de passe ; sinon le système en génère un.
   const senha: string = b.senha && String(b.senha).trim() ? String(b.senha).trim() : gerarSenha();
 
-  const hash = await bcrypt.hash(senha, 10);
-  const user = await prisma.user.create({
-    data: {
-      nome: b.nome,
-      email,
-      senha: hash,
-      role: "ALUNO",
-      aluno: {
-        create: {
-          telefone: b.telefone || null,
-          morada: b.morada || null,
-          documento: b.documento || null,
-          categoria: b.categoria || "B",
-          dataNascimento: b.dataNascimento ? new Date(b.dataNascimento) : null,
+  try {
+    const hash = await bcrypt.hash(senha, 10);
+    const user = await prisma.user.create({
+      data: {
+        nome: b.nome,
+        email,
+        senha: hash,
+        role: "ALUNO",
+        aluno: {
+          create: {
+            telefone: b.telefone || null,
+            morada: b.morada || null,
+            documento: b.documento || null,
+            categoria,
+            dataNascimento,
+          },
         },
       },
-    },
-    include: { aluno: true },
-  });
+      include: { aluno: true },
+    });
 
-  // Les identifiants sont renvoyés UNE seule fois, pour que l'admin les remette à l'élève.
-  return NextResponse.json(
-    { aluno: user.aluno, credenciais: { nome: user.nome, email: user.email, senha } },
-    { status: 201 }
-  );
+    // Les identifiants sont renvoyés UNE seule fois, pour que l'admin les remette à l'élève.
+    return NextResponse.json(
+      { aluno: user.aluno, credenciais: { nome: user.nome, email: user.email, senha } },
+      { status: 201 }
+    );
+  } catch {
+    return NextResponse.json({ erro: "Erreur du serveur." }, { status: 500 });
+  }
 }

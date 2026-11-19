@@ -168,6 +168,11 @@ export default function Agendamentos() {
                         Réactiver
                       </button>
                     )}
+                    {aula.status === "Confirmé" && (
+                      <button onClick={() => mudarStatus(aula, "Terminé")} className="text-asfalto/70 hover:underline">
+                        Marquer terminé
+                      </button>
+                    )}
                     <button onClick={() => eliminar(aula)} className="text-asfalto/50 hover:underline">
                       Supprimer
                     </button>

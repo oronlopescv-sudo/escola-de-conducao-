@@ -1,16 +1,8 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { getSecret } from "@/lib/jwt-secret";
 
-export type Sessao = { userId: string; role: "ADMIN" | "ALUNO"; nome: string };
-
-// Validação em runtime (não no import) para não quebrar o build sem env vars.
-function getSecret(): Uint8Array {
-  const s = process.env.JWT_SECRET;
-  if (process.env.NODE_ENV === "production" && !s) {
-    throw new Error("JWT_SECRET é obrigatório em produção. Defina a variável de ambiente.");
-  }
-  return new TextEncoder().encode(s || "dev-secret-mudar");
-}
+export type Sessao = { userId: string; role: "ADMIN" | "ALUNO"; nome: string; escolaId?: string };
 
 export async function criarToken(payload: Sessao) {
   return new SignJWT(payload)
@@ -22,6 +14,15 @@ export async function criarToken(payload: Sessao) {
 export async function verificarToken(token: string): Promise<Sessao | null> {
   try {
     const { payload } = await jwtVerify(token, getSecret());
+    const p = payload as Record<string, unknown>;
+    // Validação do payload: sem userId string e role conhecida, o token é recusado.
+    if (
+      typeof p.userId !== "string" ||
+      typeof p.nome !== "string" ||
+      (p.role !== "ADMIN" && p.role !== "ALUNO")
+    ) {
+      return null;
+    }
     return payload as unknown as Sessao;
   } catch {
     return null;

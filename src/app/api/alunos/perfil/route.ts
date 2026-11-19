@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sessaoAtual } from "@/lib/auth";
+import { validarIdadeCategoria } from "@/lib/regras";
 
 export async function GET() {
   const s = await sessaoAtual();
@@ -38,6 +39,23 @@ export async function PUT(req: Request) {
   const aluno = await prisma.aluno.findUnique({ where: { userId: s.userId } });
   if (!aluno) return NextResponse.json({ erro: "Élève introuvable" }, { status: 404 });
 
+  const CATEGORIAS = ["A", "B", "C", "D", "F", "A1", "B1", "C1", "D1", "BE", "CE", "DE"];
+  let novaCategoria: string | null = null;
+  if (categoria) {
+    if (!CATEGORIAS.includes(String(categoria)))
+      return NextResponse.json({ erro: "Catégorie invalide." }, { status: 400 });
+    novaCategoria = String(categoria);
+    // Re-validação da idade mínima (DL 4/2005, art. 122º)
+    if (novaCategoria !== aluno.categoria && aluno.dataNascimento) {
+      const v = validarIdadeCategoria(aluno.dataNascimento, novaCategoria);
+      if (!v.valido)
+        return NextResponse.json(
+          { erro: `L'âge minimal pour la catégorie ${novaCategoria} est de ${v.minima} ans.` },
+          { status: 400 }
+        );
+    }
+  }
+
   if (email) {
     const existente = await prisma.user.findUnique({ where: { email: String(email).toLowerCase().trim() } });
     if (existente && existente.id !== s.userId) {
@@ -45,31 +63,35 @@ export async function PUT(req: Request) {
     }
   }
 
-  const [user, alunoAtualizado] = await Promise.all([
-    prisma.user.update({
-      where: { id: s.userId },
-      data: {
-        ...(nome ? { nome } : {}),
-        ...(email ? { email: String(email).toLowerCase().trim() } : {}),
-      },
-      select: { nome: true, email: true },
-    }),
-    prisma.aluno.update({
-      where: { userId: s.userId },
-      data: {
-        ...(telefone !== undefined ? { telefone } : {}),
-        ...(categoria ? { categoria } : {}),
-      },
-    }),
-  ]);
+  try {
+    const [user, alunoAtualizado] = await Promise.all([
+      prisma.user.update({
+        where: { id: s.userId },
+        data: {
+          ...(nome ? { nome } : {}),
+          ...(email ? { email: String(email).toLowerCase().trim() } : {}),
+        },
+        select: { nome: true, email: true },
+      }),
+      prisma.aluno.update({
+        where: { userId: s.userId },
+        data: {
+          ...(telefone !== undefined ? { telefone } : {}),
+          ...(novaCategoria ? { categoria: novaCategoria } : {}),
+        },
+      }),
+    ]);
 
-  return NextResponse.json({
-    id: s.userId,
-    nome: user.nome,
-    email: user.email,
-    telefone: alunoAtualizado.telefone || "",
-    bi: alunoAtualizado.documento || "",
-    categoria: alunoAtualizado.categoria,
-    dataInscricao: alunoAtualizado.dataInscricao,
-  });
+    return NextResponse.json({
+      id: s.userId,
+      nome: user.nome,
+      email: user.email,
+      telefone: alunoAtualizado.telefone || "",
+      bi: alunoAtualizado.documento || "",
+      categoria: alunoAtualizado.categoria,
+      dataInscricao: alunoAtualizado.dataInscricao,
+    });
+  } catch {
+    return NextResponse.json({ erro: "Erreur du serveur." }, { status: 500 });
+  }
 }

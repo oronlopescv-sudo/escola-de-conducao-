@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-
-function getSecret() {
-  return new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret-mudar");
-}
+import { getSecret } from "./lib/jwt-secret";
 
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;

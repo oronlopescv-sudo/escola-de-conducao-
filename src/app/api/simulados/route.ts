@@ -21,7 +21,8 @@ export async function GET(req: Request) {
   const s = await sessaoAtual();
   if (s?.role !== "ALUNO") return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
   const url = new URL(req.url);
-  const n = Math.min(parseInt(url.searchParams.get("n") || "20"), 40);
+  const raw = parseInt(url.searchParams.get("n") || "20", 10);
+  const n = Number.isFinite(raw) ? Math.min(Math.max(raw, 1), 40) : 20;
   const todas: QuestaoRow[] = await prisma.questao.findMany();
   const baralhadas = todas.sort(() => Math.random() - 0.5).slice(0, n);
   return NextResponse.json(
@@ -49,16 +50,27 @@ export async function POST(req: Request) {
     respostas.length > 60 ||
     !respostas.every(
       (r: any) =>
-        r && typeof r.questaoId === "string" && typeof r.resposta === "string" && r.resposta.length <= 1
+        r &&
+        typeof r.questaoId === "string" &&
+        typeof r.resposta === "string" &&
+        r.resposta.length === 1 &&
+        ["A", "B", "C", "D"].includes(r.resposta)
     )
   ) {
     return NextResponse.json({ erro: "Format des réponses invalide." }, { status: 400 });
   }
-  const ids = respostas.map((r: { questaoId: string }) => r.questaoId);
+  // Uma única resposta por questão e ids existentes na BD
+  const vistas = new Set<string>();
+  const validas = (respostas as Array<{ questaoId: string; resposta: string }>).filter((r) => {
+    if (vistas.has(r.questaoId)) return false;
+    vistas.add(r.questaoId);
+    return true;
+  });
+  const ids = validas.map((r) => r.questaoId);
   const questoes: QuestaoRow[] = await prisma.questao.findMany({ where: { id: { in: ids } } });
   const mapa = new Map<string, QuestaoRow>(questoes.map((q) => [q.id, q]));
 
-  const detalhes = respostas.map((r: { questaoId: string; resposta: string }) => {
+  const detalhes = validas.map((r) => {
     const q = mapa.get(r.questaoId);
     return {
       questaoId: r.questaoId,
@@ -71,8 +83,8 @@ export async function POST(req: Request) {
   const acertos = detalhes.filter((d) => d.acertou).length;
 
   const tentativa = await prisma.tentativa.create({
-    data: { alunoId: aluno.id, total: respostas.length, acertos, detalhes },
+    data: { alunoId: aluno.id, total: validas.length, acertos, detalhes },
   });
 
-  return NextResponse.json({ tentativaId: tentativa.id, total: respostas.length, acertos, detalhes });
+  return NextResponse.json({ tentativaId: tentativa.id, total: validas.length, acertos, detalhes });
 }
