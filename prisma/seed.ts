@@ -11,25 +11,10 @@ async function main() {
     await prisma.user.upsert({
       where: { email: "admin@autoescola.cv" },
       update: {},
-      create: { nome: "Administrateur", email: "admin@autoescola.cv", senha: hash, role: "ADMIN" },
+      create: { nome: "Administrateur", email: "admin@autoescola.cv", senha: hash, role: "SUPERADMIN" },
     });
   } else {
-    console.warn("ADMIN_PASSWORD non définie — compte ADMIN non créé par le seed.");
-  }
-
-  if (process.env.SEED_DEMO === "1") {
-    const hashAluno = await bcrypt.hash("aluno123", 10);
-    await prisma.user.upsert({
-      where: { email: "aluno@autoescola.cv" },
-      update: {},
-      create: {
-        nome: "Élève de démonstration",
-        email: "aluno@autoescola.cv",
-        senha: hashAluno,
-        role: "ALUNO",
-        aluno: { create: { categoria: "B", telefone: "9XX XX XX" } },
-      },
-    });
+    console.warn("ADMIN_PASSWORD non définie — compte SUPERADMIN non créé par le seed.");
   }
 
   for (const m of MODULOS_BASE) {

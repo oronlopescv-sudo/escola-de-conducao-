@@ -17,13 +17,10 @@ npx prisma db push          # crée les tables
 npm run db:seed             # 23 modules + 40+ questions + comptes démo
 npm run dev
 ```
-Comptes de démonstration créés par le seed : `aluno@autoescola.cv / aluno123` (uniquement avec `SEED_DEMO=1`).
-Le compte admin n'a pas de mot de passe fixe dans le code : il est créé ou renouvelé via la variable d'environnement `ADMIN_PASSWORD`, par le seed, `npm run admin:reset` ou au premier démarrage de l'application.
-
 ## Comptes et variables d'environnement
 - `DATABASE_URL` et `JWT_SECRET` se définissent dans les variables d'environnement du panneau (EasyPanel) : rien n'est stocké dans le dépôt ni dans le code.
-- `ADMIN_PASSWORD` crée le compte admin (`admin@autoescola.cv`) : via le seed (`npm run db:seed`), via `npm run admin:reset`, ou automatiquement au premier démarrage si aucun compte ADMIN n'existe encore.
-- Le compte élève de démonstration (`aluno@autoescola.cv / aluno123`) n'est créé que si `SEED_DEMO=1` est défini — ne pas l'utiliser en production.
+- `ADMIN_PASSWORD` crée le compte **SUPERADMIN** (`admin@autoescola.cv`) : via le seed, via `npm run admin:reset`, ou automatiquement au premier démarrage. Le SUPERADMIN gère toutes les auto-écoles dans `/superadmin` (création d'écoles, identifiants de leurs admins, libération de l'espace après paiement).
+- Les comptes des écoles (ADMIN) et des élèves sont créés depuis les panneaux — sans aucune donnée de démonstration.
 
 ## Déploiement avec Docker (VPS / EasyPanel)
 ```bash
