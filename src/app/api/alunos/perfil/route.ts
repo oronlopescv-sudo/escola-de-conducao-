@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sessaoAtual } from "@/lib/auth";
 import { validarIdadeCategoria } from "@/lib/regras";
+import type { Categoria } from "@prisma/client";
 
 export async function GET() {
   const s = await sessaoAtual();
@@ -40,13 +41,13 @@ export async function PUT(req: Request) {
   if (!aluno) return NextResponse.json({ erro: "Élève introuvable" }, { status: 404 });
 
   const CATEGORIAS = ["A", "B", "C", "D", "F", "A1", "B1", "C1", "D1", "BE", "CE", "DE"];
-  let novaCategoria: string | null = null;
+  let novaCategoria: Categoria | null = null;
   if (categoria) {
     if (!CATEGORIAS.includes(String(categoria)))
       return NextResponse.json({ erro: "Catégorie invalide." }, { status: 400 });
-    novaCategoria = String(categoria);
+    novaCategoria = String(categoria) as Categoria;
     // Re-validação da idade mínima (DL 4/2005, art. 122º)
-    if (novaCategoria !== aluno.categoria && aluno.dataNascimento) {
+    if (novaCategoria !== null && novaCategoria !== aluno.categoria && aluno.dataNascimento) {
       const v = validarIdadeCategoria(aluno.dataNascimento, novaCategoria);
       if (!v.valido)
         return NextResponse.json(

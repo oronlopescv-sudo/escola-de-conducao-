@@ -6,6 +6,7 @@ import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sessaoAtual } from "@/lib/auth";
 import { validarIdadeCategoria } from "@/lib/regras";
+import type { Categoria } from "@prisma/client";
 
 // Mot de passe lisible, sans caractères ambigus (0/O, 1/I/l)
 function gerarSenha(): string {
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
   if (existe) return NextResponse.json({ erro: "Un utilisateur avec cet e-mail existe déjà." }, { status: 409 });
 
   const CATEGORIAS = ["A", "B", "C", "D", "F", "A1", "B1", "C1", "D1", "BE", "CE", "DE"];
-  const categoria = b.categoria ? String(b.categoria) : "B";
+  const categoria: Categoria = (b.categoria ? String(b.categoria) : "B") as Categoria;
   if (!CATEGORIAS.includes(categoria))
     return NextResponse.json({ erro: "Catégorie invalide." }, { status: 400 });
 

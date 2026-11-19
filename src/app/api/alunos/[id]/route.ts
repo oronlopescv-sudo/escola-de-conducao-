@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sessaoAtual } from "@/lib/auth";
 import { validarIdadeCategoria } from "@/lib/regras";
+import type { Categoria } from "@prisma/client";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   const s = await sessaoAtual();
@@ -45,7 +46,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 
   // Re-validação da idade mínima com a categoria final (DL 4/2005, art. 122º)
-  const categoriaFinal = b.categoria ? String(b.categoria) : undefined;
+  const categoriaFinal = b.categoria ? (String(b.categoria) as Categoria) : undefined;
   const dnFinal = dataNascimento ?? atual.dataNascimento;
   if (categoriaFinal && dnFinal) {
     const v = validarIdadeCategoria(dnFinal, categoriaFinal);
