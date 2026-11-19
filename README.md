@@ -17,8 +17,8 @@ npx prisma db push          # cria as tabelas
 npm run db:seed             # 23 módulos + 40+ questões + contas demo
 npm run dev
 ```
-Contas demo: `admin@autoescola.cv / admin123` · `aluno@autoescola.cv / aluno123`
-**Muda estas senhas em produção.**
+Contas demo criadas pelo seed: `aluno@autoescola.cv / aluno123` (só com `SEED_DEMO=1`).
+O admin não tem palavra-passe fixa no código: cria-se/renova-se com `ADMIN_PASSWORD` (variável de ambiente) via seed, `npm run admin:reset` ou no primeiro arranque. Em produção defina `ADMIN_PASSWORD` e `JWT_SECRET` no painel.
 
 ## Deploy com Docker (VPS / Easypanel)
 ```bash

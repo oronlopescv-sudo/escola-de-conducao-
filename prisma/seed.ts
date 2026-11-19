@@ -5,25 +5,32 @@ import { MODULOS_BASE, QUESTOES_BASE } from "../src/lib/seed-data";
 const prisma = new PrismaClient();
 
 async function main() {
-  const hash = await bcrypt.hash("admin123", 10);
-  await prisma.user.upsert({
-    where: { email: "admin@autoescola.cv" },
-    update: {},
-    create: { nome: "Administrador", email: "admin@autoescola.cv", senha: hash, role: "ADMIN" },
-  });
+  const passe = process.env.ADMIN_PASSWORD;
+  if (passe) {
+    const hash = await bcrypt.hash(passe, 10);
+    await prisma.user.upsert({
+      where: { email: "admin@autoescola.cv" },
+      update: {},
+      create: { nome: "Administrador", email: "admin@autoescola.cv", senha: hash, role: "ADMIN" },
+    });
+  } else {
+    console.warn("ADMIN_PASSWORD não definida — conta ADMIN não criada pelo seed.");
+  }
 
-  const hashAluno = await bcrypt.hash("aluno123", 10);
-  await prisma.user.upsert({
-    where: { email: "aluno@autoescola.cv" },
-    update: {},
-    create: {
-      nome: "Aluno Demonstração",
-      email: "aluno@autoescola.cv",
-      senha: hashAluno,
-      role: "ALUNO",
-      aluno: { create: { categoria: "B", telefone: "9XX XX XX" } },
-    },
-  });
+  if (process.env.SEED_DEMO === "1") {
+    const hashAluno = await bcrypt.hash("aluno123", 10);
+    await prisma.user.upsert({
+      where: { email: "aluno@autoescola.cv" },
+      update: {},
+      create: {
+        nome: "Aluno Demonstração",
+        email: "aluno@autoescola.cv",
+        senha: hashAluno,
+        role: "ALUNO",
+        aluno: { create: { categoria: "B", telefone: "9XX XX XX" } },
+      },
+    });
+  }
 
   for (const m of MODULOS_BASE) {
     await prisma.modulo.upsert({
@@ -53,8 +60,6 @@ async function main() {
   }
 
   console.log("Seed concluído.");
-  console.log("Admin: admin@autoescola.cv / admin123");
-  console.log("Aluno: aluno@autoescola.cv / aluno123");
 }
 
 main().finally(() => prisma.$disconnect());

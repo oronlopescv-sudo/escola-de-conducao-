@@ -26,12 +26,10 @@ USER app
 EXPOSE 3000
 ENV PORT=3000 HOSTNAME=0.0.0.0
 
-# Valores por omissão de produção. Podem (e devem) ser sobrescritos pelas variáveis
-# de ambiente configuradas no EasyPanel — estas só garantem que a app arranque
-# mesmo sem configuração manual. O host sitenext_escolacv só é alcançável dentro
-# da rede interna do EasyPanel, não pela internet.
-ENV DATABASE_URL="mysql://mysqlescola:escolaconducao@sitenext_escolacv:3306/ESCOLA"
-ENV JWT_SECRET="UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3gZv1/u2oq"
+# DATABASE_URL e JWT_SECRET têm de ser definidos nas variáveis de ambiente do
+# serviço (não ficam embutidos aqui). Em produção, o DATABASE_URL aponta para a
+# base de dados PostgreSQL do projeto no EasyPanel, apenas alcançável dentro da
+# rede interna (sslmode=disable porque é uma ligação interna sem TLS).
 
 # Sincroniza o schema com a base de dados antes de arrancar (cria tabelas novas,
 # não apaga dados). Se falhar (ex.: DB ainda a arrancar), o servidor arranca na mesma.

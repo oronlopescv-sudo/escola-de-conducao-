@@ -45,11 +45,16 @@ export async function garantirDadosBase(): Promise<void> {
 
     const totalAdmins = await prisma.user.count({ where: { role: "ADMIN" } });
     if (totalAdmins === 0) {
-      const hash = await bcrypt.hash("admin123", 10);
-      await prisma.user.create({
-        data: { nome: "Administrador", email: "admin@autoescola.cv", senha: hash, role: "ADMIN" },
-      });
-      console.warn("⚠️ Conta ADMIN criada (admin@autoescola.cv / admin123). Altere a palavra-passe.");
+      const passe = process.env.ADMIN_PASSWORD;
+      if (!passe) {
+        console.warn("⚠️ Sem conta ADMIN: defina ADMIN_PASSWORD nas variáveis de ambiente.");
+      } else {
+        const hash = await bcrypt.hash(passe, 10);
+        await prisma.user.create({
+          data: { nome: "Administrador", email: "admin@autoescola.cv", senha: hash, role: "ADMIN" },
+        });
+        console.warn("✅ Conta ADMIN criada (palavra-passe definida via ADMIN_PASSWORD).");
+      }
     }
   } catch (e) {
     // Não bloquear o pedido se o seed falhar; tenta novamente no próximo arranque.

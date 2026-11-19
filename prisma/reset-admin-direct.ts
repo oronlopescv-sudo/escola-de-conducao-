@@ -4,10 +4,15 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function resetAdminDirect() {
+  const passe = process.env.ADMIN_PASSWORD;
+  if (!passe) {
+    console.error("Defina ADMIN_PASSWORD nas variáveis de ambiente antes de correr este script.");
+    process.exit(1);
+  }
   try {
     console.log("🔄 Conectando ao banco de dados...");
 
-    const hash = await bcrypt.hash("admin123", 10);
+    const hash = await bcrypt.hash(passe, 10);
     console.log("🔐 Hash gerado:", hash);
 
     // Primeiro, verifica se o usuário existe
@@ -39,10 +44,7 @@ async function resetAdminDirect() {
       console.log("👤 Role:", created.role);
     }
 
-    console.log("\n🎉 Credenciais finais:");
-    console.log("Email: admin@autoescola.cv");
-    console.log("Senha: admin123");
-    console.log("\n✔️ Tudo pronto! Testa o login agora.");
+    console.log("\n✔️ Tudo pronto! Palavra-passe renovada a partir de ADMIN_PASSWORD.");
 
   } catch (error: any) {
     console.error("❌ ERRO:", error.message);

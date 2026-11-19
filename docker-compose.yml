@@ -1,16 +1,15 @@
 services:
   db:
-    image: mysql:8.4
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-escolaconducao}
-      MYSQL_USER: mysqlescola
-      MYSQL_PASSWORD: ${DB_PASSWORD:-escolaconducao}
-      MYSQL_DATABASE: ESCOLA
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-escolaconducao}
+      POSTGRES_USER: mysqlescola
+      POSTGRES_DB: ESCOLA
     volumes:
-      - mysqldata:/var/lib/mysql
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD:-escolaconducao}"]
+      test: ["CMD-SHELL", "pg_isready -U mysqlescola -d ESCOLA -h localhost"]
       interval: 5s
       retries: 10
 
@@ -21,10 +20,10 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: mysql://mysqlescola:${DB_PASSWORD:-escolaconducao}@db:3306/ESCOLA
+      DATABASE_URL: postgres://mysqlescola:${DB_PASSWORD:-escolaconducao}@db:5432/ESCOLA?sslmode=disable
       JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no .env}
     ports:
       - "3000:3000"
 
 volumes:
-  mysqldata:
+  pgdata:

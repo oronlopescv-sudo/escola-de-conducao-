@@ -4,8 +4,13 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function resetAdmin() {
-  const hash = await bcrypt.hash("admin123", 10);
-  const admin = await prisma.user.upsert({
+  const passe = process.env.ADMIN_PASSWORD;
+  if (!passe) {
+    console.error("Defina ADMIN_PASSWORD nas variáveis de ambiente antes de correr este script.");
+    process.exit(1);
+  }
+  const hash = await bcrypt.hash(passe, 10);
+  await prisma.user.upsert({
     where: { email: "admin@autoescola.cv" },
     update: { senha: hash },
     create: {
@@ -15,9 +20,7 @@ async function resetAdmin() {
       role: "ADMIN"
     },
   });
-  console.log("✅ Admin configurado com sucesso!");
-  console.log("Email: admin@autoescola.cv");
-  console.log("Senha: admin123");
+  console.log("✅ Palavra-passe do admin renovada a partir de ADMIN_PASSWORD.");
 }
 
 resetAdmin().catch(err => {
