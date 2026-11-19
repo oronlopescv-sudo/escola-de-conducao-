@@ -4,9 +4,8 @@ import { MODULOS_BASE, QUESTOES_BASE } from "@/lib/seed-data";
 
 let verificado = false;
 
-// Garantit que la base de données contient les 23 modules, la banque de questions et
-// un utilisateur ADMIN, même si le seed n'a jamais été exécuté sur le serveur.
-// S'exécute au maximum une fois par processus ; il est idempotent.
+// Garantit que la base contient les 23 modules, la banque de questions, l'école
+// par défaut, le rattachement des données et un SUPERADMIN. Idempotent.
 export async function garantirDadosBase(): Promise<void> {
   if (verificado) return;
   verificado = true;
@@ -43,17 +42,37 @@ export async function garantirDadosBase(): Promise<void> {
       }
     }
 
-    const totalAdmins = await prisma.user.count({ where: { role: "ADMIN" } });
-    if (totalAdmins === 0) {
-      const passe = process.env.ADMIN_PASSWORD;
+    // École par défaut (l'espace de la plateforme)
+    let cv = await prisma.escola.findUnique({ where: { slug: "cv" } });
+    if (!cv) {
+      cv = await prisma.escola.create({
+        data: { nome: "Auto-École CV", slug: "cv", email: "contact@autoescola.cv", ativo: true },
+      });
+    }
+
+    // Rattachement des données existantes à l'école par défaut
+    await prisma.aluno.updateMany({ where: { escolaId: null }, data: { escolaId: cv.id } });
+    await prisma.agendamento.updateMany({ where: { escolaId: null }, data: { escolaId: cv.id } });
+    await prisma.tentativa.updateMany({ where: { escolaId: null }, data: { escolaId: cv.id } });
+
+    const totalSuper = await prisma.user.count({ where: { role: "SUPERADMIN" } });
+    const passe = process.env.ADMIN_PASSWORD;
+    if (totalSuper === 0) {
       if (!passe) {
-        console.warn("⚠️ Pas de compte ADMIN : définissez ADMIN_PASSWORD dans les variables d'environnement.");
+        console.warn("⚠️ Pas de SUPERADMIN : définissez ADMIN_PASSWORD dans les variables d'environnement.");
       } else {
-        const hash = await bcrypt.hash(passe, 10);
-        await prisma.user.create({
-          data: { nome: "Administrateur", email: "admin@autoescola.cv", senha: hash, role: "ADMIN" },
-        });
-        console.warn("✅ Compte ADMIN créé (mot de passe défini via ADMIN_PASSWORD).");
+        const admin = await prisma.user.findUnique({ where: { email: "admin@autoescola.cv" } });
+        if (admin && admin.role !== "SUPERADMIN") {
+          // Le compte admin existant devient le gestionnaire de la plateforme
+          await prisma.user.update({ where: { id: admin.id }, data: { role: "SUPERADMIN", escolaId: null } });
+          console.warn("✅ Le compte admin existant est maintenant SUPERADMIN.");
+        } else if (!admin) {
+          const hash = await bcrypt.hash(passe, 10);
+          await prisma.user.create({
+            data: { nome: "Administrateur", email: "admin@autoescola.cv", senha: hash, role: "SUPERADMIN" },
+          });
+          console.warn("✅ Compte SUPERADMIN créé (mot de passe défini via ADMIN_PASSWORD).");
+        }
       }
     }
   } catch (e) {

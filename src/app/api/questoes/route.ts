@@ -3,10 +3,11 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sessaoAtual } from "@/lib/auth";
+import { eGestor } from "@/lib/escola-scope";
 
 export async function GET() {
   const s = await sessaoAtual();
-  if (s?.role !== "ADMIN") return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
+  if (!s || !eGestor(s)) return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
   const questoes = await prisma.questao.findMany({
     include: { modulo: { select: { numero: true, titulo: true } } },
     orderBy: { id: "asc" },
@@ -16,7 +17,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const s = await sessaoAtual();
-  if (s?.role !== "ADMIN") return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
+  if (!s || !eGestor(s)) return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
   const b = await req.json().catch(() => null);
   if (!b || typeof b !== "object")
     return NextResponse.json({ erro: "Requête invalide." }, { status: 400 });

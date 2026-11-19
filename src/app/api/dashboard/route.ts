@@ -3,19 +3,20 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sessaoAtual } from "@/lib/auth";
+import { eGestor, filtroEscola } from "@/lib/escola-scope";
 
 export async function GET() {
   try {
     const s = await sessaoAtual();
     if (!s) return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
 
-    if (s.role === "ADMIN") {
+    if (eGestor(s)) {
       const [totalAlunos, ativos, totalQuestoes, totalModulos, tentativas] = await Promise.all([
-        prisma.aluno.count(),
-        prisma.aluno.count({ where: { ativo: true } }),
+        prisma.aluno.count({ where: filtroEscola(s) }),
+        prisma.aluno.count({ where: { ativo: true, ...filtroEscola(s) } }),
         prisma.questao.count(),
         prisma.modulo.count(),
-        prisma.tentativa.findMany({ select: { total: true, acertos: true } }),
+        prisma.tentativa.findMany({ where: filtroEscola(s), select: { total: true, acertos: true } }),
       ]);
 
       const totalTentativas = tentativas.length;

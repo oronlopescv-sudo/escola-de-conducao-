@@ -28,7 +28,8 @@ export default function Login() {
       const d = await r.json();
       if (d.success) {
         // Navigation complète pour garantir que le middleware lit le nouveau cookie
-        window.location.href = d.role === "ADMIN" ? "/admin" : "/aluno";
+        window.location.href =
+          d.role === "SUPERADMIN" ? "/superadmin" : d.role === "ADMIN" ? "/admin" : "/aluno";
       } else {
         setErro("Réponse invalide du serveur");
       }

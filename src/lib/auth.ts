@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { getSecret } from "@/lib/jwt-secret";
 
-export type Sessao = { userId: string; role: "ADMIN" | "ALUNO"; nome: string; escolaId?: string };
+export type Sessao = { userId: string; role: "ADMIN" | "SUPERADMIN" | "ALUNO"; nome: string; escolaId?: string };
 
 export async function criarToken(payload: Sessao) {
   return new SignJWT(payload)

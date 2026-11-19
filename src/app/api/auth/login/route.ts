@@ -26,7 +26,10 @@ export async function POST(req: Request) {
     await garantirDadosBase();
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
-      include: { aluno: { select: { ativo: true } } },
+      include: {
+        aluno: { select: { ativo: true } },
+        escola: { select: { ativo: true } },
+      },
     });
     // Comparaison toujours exécutée à temps constant (évite l'énumération par timing)
     const hashDummy = "$2a$10$C6UzMDM.H6dfI/f/IKcEeO7ZKo8dY1vJ0f0eYhN0y1yQdCkq2eD2a";
@@ -37,8 +40,20 @@ export async function POST(req: Request) {
     if (user.role === "ALUNO" && user.aluno && !user.aluno.ativo) {
       return NextResponse.json({ erro: "Compte désactivé. Contactez l'auto-école." }, { status: 403 });
     }
+    // École sans espace libéré (paiement en attente ou désactivée)
+    if (user.escola && !user.escola.ativo) {
+      return NextResponse.json(
+        { erro: "Auto-école désactivée. Contactez l'administrateur de la plateforme." },
+        { status: 403 }
+      );
+    }
 
-    const token = await criarToken({ userId: user.id, role: user.role, nome: user.nome });
+    const token = await criarToken({
+      userId: user.id,
+      role: user.role,
+      nome: user.nome,
+      escolaId: user.escolaId ?? undefined,
+    });
     const res = NextResponse.json({ role: user.role, success: true });
     res.cookies.set("token", token, {
       httpOnly: true,

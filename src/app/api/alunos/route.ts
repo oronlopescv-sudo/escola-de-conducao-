@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { sessaoAtual } from "@/lib/auth";
 import { validarIdadeCategoria } from "@/lib/regras";
 import type { Categoria } from "@prisma/client";
+import { eGestor, filtroEscola } from "@/lib/escola-scope";
+import { enviarMailCredenciais, mailCredenciaisHtml } from "@/lib/email";
 
 // Mot de passe lisible, sans caractères ambigus (0/O, 1/I/l)
 function gerarSenha(): string {
@@ -18,8 +20,9 @@ function gerarSenha(): string {
 
 export async function GET() {
   const s = await sessaoAtual();
-  if (s?.role !== "ADMIN") return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
+  if (!s || !eGestor(s)) return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
   const alunos = await prisma.aluno.findMany({
+    where: filtroEscola(s),
     include: {
       user: { select: { nome: true, email: true } },
       _count: { select: { tentativas: true, progresso: { where: { concluido: true } } } },
@@ -31,7 +34,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const s = await sessaoAtual();
-  if (s?.role !== "ADMIN") return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
+  if (!s || !eGestor(s)) return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
   const b = await req.json();
   if (!b.nome || !b.email)
     return NextResponse.json({ erro: "Nom et e-mail sont obligatoires." }, { status: 400 });
@@ -59,6 +62,20 @@ export async function POST(req: Request) {
       );
   }
 
+  // École de l'élève : celle du gestor ; SUPERADMIN peut en viser une autre
+  const escolaIdAlvo = s.role === "SUPERADMIN" ? String(b.escolaId || "") : s.escolaId;
+  if (!escolaIdAlvo)
+    return NextResponse.json({ erro: "escolaId est obligatoire pour le super-admin." }, { status: 400 });
+  const escolaAlvo = await prisma.escola.findUnique({ where: { id: escolaIdAlvo } });
+  if (!escolaAlvo) return NextResponse.json({ erro: "École introuvable." }, { status: 400 });
+  // Escola sem espaço libéré não inscreve alunos
+  if (!escolaAlvo.ativo) {
+    return NextResponse.json(
+      { erro: "Auto-école non libérée (paiement requis). Inscription impossible." },
+      { status: 403 }
+    );
+  }
+
   // L'admin peut indiquer un mot de passe ; sinon le système en génère un.
   const senha: string = b.senha && String(b.senha).trim() ? String(b.senha).trim() : gerarSenha();
 
@@ -70,6 +87,7 @@ export async function POST(req: Request) {
         email,
         senha: hash,
         role: "ALUNO",
+        escolaId: escolaIdAlvo,
         aluno: {
           create: {
             telefone: b.telefone || null,
@@ -82,6 +100,9 @@ export async function POST(req: Request) {
       },
       include: { aluno: true },
     });
+
+    // E-mail des identifiants (sans bloquer la réponse si Resend n'est pas configuré)
+    void enviarMailCredenciais({ para: user.email, nome: user.nome, senha });
 
     // Les identifiants sont renvoyés UNE seule fois, pour que l'admin les remette à l'élève.
     return NextResponse.json(
