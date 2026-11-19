@@ -15,16 +15,16 @@ export async function middleware(req: NextRequest) {
       const { payload } = await jwtVerify(token, getSecret());
       sessao = payload;
     } catch {
-      // token inválido ou expirado — trata como sem sessão
+      // jeton invalide ou expiré — traité comme absence de session
     }
   }
 
-  // Protege rotas de dashboard — redireciona para login se não há sessão
+  // Protège les routes du tableau de bord — redirige vers la connexion s'il n'y a pas de session
   if (!sessao && (pathname.startsWith("/admin") || pathname.startsWith("/aluno"))) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Verifica role de acesso às rotas protegidas
+  // Vérifie le rôle d'accès aux routes protégées
   if (sessao) {
     if (pathname.startsWith("/admin") && sessao.role !== "ADMIN")
       return NextResponse.redirect(new URL("/aluno", req.url));

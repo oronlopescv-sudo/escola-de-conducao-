@@ -11,10 +11,10 @@ async function main() {
     await prisma.user.upsert({
       where: { email: "admin@autoescola.cv" },
       update: {},
-      create: { nome: "Administrador", email: "admin@autoescola.cv", senha: hash, role: "ADMIN" },
+      create: { nome: "Administrateur", email: "admin@autoescola.cv", senha: hash, role: "ADMIN" },
     });
   } else {
-    console.warn("ADMIN_PASSWORD não definida — conta ADMIN não criada pelo seed.");
+    console.warn("ADMIN_PASSWORD non définie — compte ADMIN non créé par le seed.");
   }
 
   if (process.env.SEED_DEMO === "1") {
@@ -23,7 +23,7 @@ async function main() {
       where: { email: "aluno@autoescola.cv" },
       update: {},
       create: {
-        nome: "Aluno Demonstração",
+        nome: "Élève de démonstration",
         email: "aluno@autoescola.cv",
         senha: hashAluno,
         role: "ALUNO",
@@ -59,7 +59,7 @@ async function main() {
     }
   }
 
-  console.log("Seed concluído.");
+  console.log("Seed terminé.");
 }
 
 main().finally(() => prisma.$disconnect());

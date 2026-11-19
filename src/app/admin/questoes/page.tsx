@@ -49,7 +49,7 @@ export default function Questoes() {
     });
     if (!r.ok) {
       const d = await r.json();
-      setErro(d.erro || "Erro ao criar questão.");
+      setErro(d.erro || "Erreur lors de la création de la question.");
       return;
     }
     setForm({ enunciado: "", opcaoA: "", opcaoB: "", opcaoC: "", opcaoD: "", correta: "A", explicacao: "", moduloId: "" });
@@ -58,7 +58,7 @@ export default function Questoes() {
   }
 
   async function eliminar(id: string) {
-    if (!confirm("Eliminar esta questão?")) return;
+    if (!confirm("Supprimer cette question ?")) return;
     await fetch(`/api/questoes/${id}`, { method: "DELETE" });
     carregar();
   }
@@ -67,24 +67,24 @@ export default function Questoes() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display text-2xl font-extrabold">Banco de Questões</h1>
-          <p className="text-sm text-asfalto/60">{questoes.length} questões disponíveis para simulados</p>
+          <h1 className="font-display text-2xl font-extrabold">Banque de questions</h1>
+          <p className="text-sm text-asfalto/60">{questoes.length} questions disponibles pour les examens blancs</p>
         </div>
         <button className="btn-primary" onClick={() => setMostrarForm(!mostrarForm)}>
-          {mostrarForm ? "Fechar" : "Nova questão"}
+          {mostrarForm ? "Fermer" : "Nouvelle question"}
         </button>
       </div>
 
       {mostrarForm && (
         <form onSubmit={criar} className="card mb-6 grid gap-3">
           <div>
-            <label className="label">Enunciado *</label>
+            <label className="label">Énoncé *</label>
             <textarea className="input" rows={2} value={form.enunciado} onChange={(e) => setForm({ ...form, enunciado: e.target.value })} required />
           </div>
           <div className="grid md:grid-cols-2 gap-3">
             {(["A", "B", "C", "D"] as const).map((op) => (
               <div key={op}>
-                <label className="label">Opção {op}{op === "A" || op === "B" ? " *" : ""}</label>
+                <label className="label">Option {op}{op === "A" || op === "B" ? " *" : ""}</label>
                 <input
                   className="input"
                   value={(form as any)[`opcao${op}`]}
@@ -96,15 +96,15 @@ export default function Questoes() {
           </div>
           <div className="grid md:grid-cols-3 gap-3">
             <div>
-              <label className="label">Resposta correta</label>
+              <label className="label">Réponse correcte</label>
               <select className="input" value={form.correta} onChange={(e) => setForm({ ...form, correta: e.target.value })}>
                 <option>A</option><option>B</option><option>C</option><option>D</option>
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="label">Módulo</label>
+              <label className="label">Module</label>
               <select className="input" value={form.moduloId} onChange={(e) => setForm({ ...form, moduloId: e.target.value })}>
-                <option value="">Sem módulo</option>
+                <option value="">Sans module</option>
                 {modulos.map((m) => (
                   <option key={m.id} value={m.id}>{m.numero} — {m.titulo}</option>
                 ))}
@@ -112,12 +112,12 @@ export default function Questoes() {
             </div>
           </div>
           <div>
-            <label className="label">Explicação (mostrada após a correção)</label>
+            <label className="label">Explication (affichée après la correction)</label>
             <input className="input" value={form.explicacao} onChange={(e) => setForm({ ...form, explicacao: e.target.value })} />
           </div>
           {erro && <p className="text-sm text-stop">{erro}</p>}
           <div>
-            <button className="btn-dark">Guardar questão</button>
+            <button className="btn-dark">Enregistrer la question</button>
           </div>
         </form>
       )}
@@ -128,7 +128,7 @@ export default function Questoes() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs text-asfalto/40 mb-1">
-                  #{i + 1}{q.modulo ? ` · Módulo ${q.modulo.numero} — ${q.modulo.titulo}` : ""}
+                  #{i + 1}{q.modulo ? ` · Module ${q.modulo.numero} — ${q.modulo.titulo}` : ""}
                 </p>
                 <p className="font-medium mb-2">{q.enunciado}</p>
                 <ul className="text-sm space-y-0.5">
@@ -144,7 +144,7 @@ export default function Questoes() {
                 </ul>
               </div>
               <button onClick={() => eliminar(q.id)} className="text-xs text-stop hover:underline shrink-0">
-                Eliminar
+                Supprimer
               </button>
             </div>
           </div>

@@ -18,7 +18,7 @@ type AlunoOpcao = { id: string; user: { nome: string; email: string } };
 
 const FORM_VAZIO = {
   alunoId: "",
-  tipo: "Teórica",
+  tipo: "Théorique",
   data: "",
   hora: "",
   duracao: 90,
@@ -56,9 +56,9 @@ export default function Agendamentos() {
 
   async function criarAula() {
     setErro("");
-    if (!form.alunoId) return setErro("Escolha o aluno.");
-    if (!form.data) return setErro("Escolha a data.");
-    if (!form.hora) return setErro("Escolha a hora.");
+    if (!form.alunoId) return setErro("Choisissez un élève.");
+    if (!form.data) return setErro("Choisissez une date.");
+    if (!form.hora) return setErro("Choisissez une heure.");
     setAGuardar(true);
     try {
       const r = await fetch("/api/agendamentos", {
@@ -72,10 +72,10 @@ export default function Agendamentos() {
         carregar();
       } else {
         const d = await r.json();
-        setErro(d.erro || "Erro ao criar aula.");
+        setErro(d.erro || "Erreur lors de la création du rendez-vous.");
       }
     } catch {
-      setErro("Erro de ligação. Tente novamente.");
+      setErro("Erreur de connexion. Veuillez réessayer.");
     } finally {
       setAGuardar(false);
     }
@@ -91,67 +91,67 @@ export default function Agendamentos() {
   }
 
   async function eliminar(aula: Agendamento) {
-    if (!confirm(`Eliminar a aula de ${aula.alunoNome} em ${new Date(aula.data).toLocaleDateString("pt-PT")}?`)) return;
+    if (!confirm(`Supprimer le rendez-vous de ${aula.alunoNome} du ${new Date(aula.data).toLocaleDateString("fr-FR")} ?`)) return;
     await fetch(`/api/agendamentos/${aula.id}`, { method: "DELETE" });
     carregar();
   }
 
-  if (loading) return <p className="text-sm text-asfalto/50">A carregar...</p>;
+  if (loading) return <p className="text-sm text-asfalto/50">Chargement...</p>;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-2xl font-extrabold">Agendamentos</h1>
+        <h1 className="font-display text-2xl font-extrabold">Rendez-vous</h1>
         <button
           onClick={() => { setErro(""); setModal(true); }}
           className="px-4 py-2 bg-sinal text-asfalto rounded-lg font-semibold text-sm hover:bg-sinal/90"
         >
-          + Nova Aula
+          + Nouveau rendez-vous
         </button>
       </div>
 
       {aulas.length === 0 && (
         <div className="card text-center py-8 text-asfalto/60">
-          Nenhuma aula agendada. Use "+ Nova Aula" para criar a primeira.
+          Aucun rendez-vous planifié. Utilisez « + Nouveau rendez-vous » pour commencer.
         </div>
       )}
 
       <div className="space-y-3">
         {aulas.map((aula) => {
-          const dataFormatada = new Date(aula.data).toLocaleDateString("pt-PT");
+          const dataFormatada = new Date(aula.data).toLocaleDateString("fr-FR");
           return (
             <div key={aula.id} className="card">
               <div className="grid md:grid-cols-7 grid-cols-2 gap-3 text-sm items-center">
                 <div>
-                  <p className="text-asfalto/50 text-xs">Aluno</p>
+                  <p className="text-asfalto/50 text-xs">Élève</p>
                   <p className="font-semibold">{aula.alunoNome}</p>
                 </div>
                 <div>
-                  <p className="text-asfalto/50 text-xs">Tipo</p>
+                  <p className="text-asfalto/50 text-xs">Type</p>
                   <p className="font-semibold">{aula.tipo}</p>
                 </div>
                 <div>
-                  <p className="text-asfalto/50 text-xs">Data</p>
+                  <p className="text-asfalto/50 text-xs">Date</p>
                   <p>{dataFormatada}</p>
                 </div>
                 <div>
-                  <p className="text-asfalto/50 text-xs">Hora</p>
+                  <p className="text-asfalto/50 text-xs">Heure</p>
                   <p className="font-semibold">{aula.hora}</p>
                 </div>
                 <div>
-                  <p className="text-asfalto/50 text-xs">Instrutor</p>
+                  <p className="text-asfalto/50 text-xs">Instructeur</p>
                   <p>{aula.instrutorNome || "—"}</p>
                 </div>
                 <div>
-                  <p className="text-asfalto/50 text-xs">Local</p>
+                  <p className="text-asfalto/50 text-xs">Lieu</p>
                   <p className="text-xs">{aula.local || "—"}</p>
                 </div>
                 <div className="text-right space-y-1">
                   <p
                     className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-                      aula.status === "Confirmado"
+                      aula.status === "Confirmé"
                         ? "bg-verde/20 text-verde"
-                        : aula.status === "Cancelado"
+                        : aula.status === "Annulé"
                         ? "bg-stop/20 text-stop"
                         : "bg-asfalto/20"
                     }`}
@@ -159,17 +159,17 @@ export default function Agendamentos() {
                     {aula.status}
                   </p>
                   <div className="flex justify-end gap-2 text-xs">
-                    {aula.status !== "Cancelado" ? (
-                      <button onClick={() => mudarStatus(aula, "Cancelado")} className="text-stop hover:underline">
-                        Cancelar
+                    {aula.status !== "Annulé" ? (
+                      <button onClick={() => mudarStatus(aula, "Annulé")} className="text-stop hover:underline">
+                        Annuler
                       </button>
                     ) : (
-                      <button onClick={() => mudarStatus(aula, "Confirmado")} className="text-verde hover:underline">
-                        Reativar
+                      <button onClick={() => mudarStatus(aula, "Confirmé")} className="text-verde hover:underline">
+                        Réactiver
                       </button>
                     )}
                     <button onClick={() => eliminar(aula)} className="text-asfalto/50 hover:underline">
-                      Eliminar
+                      Supprimer
                     </button>
                   </div>
                 </div>
@@ -182,17 +182,17 @@ export default function Agendamentos() {
       {modal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-lg">
-            <h2 className="font-display text-xl font-extrabold mb-4">Nova Aula</h2>
+            <h2 className="font-display text-xl font-extrabold mb-4">Nouveau rendez-vous</h2>
 
             <div className="space-y-3 max-h-96 overflow-y-auto">
               <div>
-                <label className="label">Aluno *</label>
+                <label className="label">Élève *</label>
                 <select
                   value={form.alunoId}
                   onChange={(e) => setForm({ ...form, alunoId: e.target.value })}
                   className="w-full px-3 py-2 border border-asfalto/20 rounded-lg text-sm bg-white"
                 >
-                  <option value="">— Escolher aluno —</option>
+                  <option value="">— Choisir un élève —</option>
                   {alunos.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.user.nome} ({a.user.email})
@@ -200,24 +200,24 @@ export default function Agendamentos() {
                   ))}
                 </select>
                 {alunos.length === 0 && (
-                  <p className="mt-1 text-xs text-stop">Ainda não há alunos inscritos.</p>
+                  <p className="mt-1 text-xs text-stop">Aucun élève inscrit pour le moment.</p>
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">Tipo</label>
+                  <label className="label">Type</label>
                   <select
                     value={form.tipo}
                     onChange={(e) => setForm({ ...form, tipo: e.target.value })}
                     className="w-full px-3 py-2 border border-asfalto/20 rounded-lg text-sm bg-white"
                   >
-                    <option>Teórica</option>
-                    <option>Prática</option>
+                    <option>Théorique</option>
+                    <option>Pratique</option>
                   </select>
                 </div>
                 <div>
-                  <label className="label">Duração (min)</label>
+                  <label className="label">Durée (min)</label>
                   <input
                     type="number"
                     min={15}
@@ -230,7 +230,7 @@ export default function Agendamentos() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">Data *</label>
+                  <label className="label">Date *</label>
                   <input
                     type="date"
                     value={form.data}
@@ -239,7 +239,7 @@ export default function Agendamentos() {
                   />
                 </div>
                 <div>
-                  <label className="label">Hora *</label>
+                  <label className="label">Heure *</label>
                   <input
                     type="time"
                     value={form.hora}
@@ -250,10 +250,10 @@ export default function Agendamentos() {
               </div>
 
               <div>
-                <label className="label">Local</label>
+                <label className="label">Lieu</label>
                 <input
                   type="text"
-                  placeholder="Ex: Sala de Aula - Praia"
+                  placeholder="Ex : Salle de cours - Praia"
                   value={form.local}
                   onChange={(e) => setForm({ ...form, local: e.target.value })}
                   className="w-full px-3 py-2 border border-asfalto/20 rounded-lg text-sm"
@@ -261,10 +261,10 @@ export default function Agendamentos() {
               </div>
 
               <div>
-                <label className="label">Instrutor</label>
+                <label className="label">Instructeur</label>
                 <input
                   type="text"
-                  placeholder="Nome do instrutor"
+                  placeholder="Nom de l'instructeur"
                   value={form.instrutorNome}
                   onChange={(e) => setForm({ ...form, instrutorNome: e.target.value })}
                   className="w-full px-3 py-2 border border-asfalto/20 rounded-lg text-sm"
@@ -276,14 +276,14 @@ export default function Agendamentos() {
 
             <div className="flex gap-3 mt-4">
               <button onClick={() => setModal(false)} className="flex-1 px-4 py-2 border border-asfalto/20 rounded-lg font-semibold text-sm hover:bg-asfalto/5">
-                Cancelar
+                Annuler
               </button>
               <button
                 onClick={criarAula}
                 disabled={aGuardar}
                 className="flex-1 px-4 py-2 bg-sinal text-asfalto rounded-lg font-semibold text-sm hover:bg-sinal/90 disabled:opacity-50"
               >
-                {aGuardar ? "A criar..." : "Criar Aula"}
+                {aGuardar ? "Création..." : "Créer le rendez-vous"}
               </button>
             </div>
           </div>

@@ -16,10 +16,10 @@ type QuestaoRow = {
   moduloId: string | null;
 };
 
-// GET: gera um simulado (questões aleatórias sem a resposta)
+// GET : génère un examen blanc (questions aléatoires sans la réponse)
 export async function GET(req: Request) {
   const s = await sessaoAtual();
-  if (s?.role !== "ALUNO") return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
+  if (s?.role !== "ALUNO") return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
   const url = new URL(req.url);
   const n = Math.min(parseInt(url.searchParams.get("n") || "20"), 40);
   const todas: QuestaoRow[] = await prisma.questao.findMany();
@@ -29,18 +29,18 @@ export async function GET(req: Request) {
   );
 }
 
-// POST: submete respostas e devolve correção
+// POST : soumet les réponses et renvoie la correction
 export async function POST(req: Request) {
   const s = await sessaoAtual();
-  if (s?.role !== "ALUNO") return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
+  if (s?.role !== "ALUNO") return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
   const aluno = await prisma.aluno.findUnique({ where: { userId: s.userId } });
-  if (!aluno) return NextResponse.json({ erro: "Aluno não encontrado" }, { status: 404 });
+  if (!aluno) return NextResponse.json({ erro: "Élève introuvable" }, { status: 404 });
 
   let payload: { respostas?: unknown };
   try {
     payload = await req.json();
   } catch {
-    return NextResponse.json({ erro: "Pedido inválido." }, { status: 400 });
+    return NextResponse.json({ erro: "Requête invalide." }, { status: 400 });
   }
   const respostas = payload.respostas;
   if (
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
         r && typeof r.questaoId === "string" && typeof r.resposta === "string" && r.resposta.length <= 1
     )
   ) {
-    return NextResponse.json({ erro: "Formato de respostas inválido." }, { status: 400 });
+    return NextResponse.json({ erro: "Format des réponses invalide." }, { status: 400 });
   }
   const ids = respostas.map((r: { questaoId: string }) => r.questaoId);
   const questoes: QuestaoRow[] = await prisma.questao.findMany({ where: { id: { in: ids } } });

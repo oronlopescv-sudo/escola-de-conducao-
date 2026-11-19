@@ -24,11 +24,11 @@ export default function Simulado() {
     setRespostas({});
     try {
       const r = await fetch("/api/simulados?n=20");
-      if (!r.ok) throw new Error(`Erro ${r.status}`);
+      if (!r.ok) throw new Error(`Erreur ${r.status}`);
       setQuestoes(await r.json());
     } catch (e: any) {
       console.error("❌ Simulado erro:", e);
-      alert("Erro ao carregar simulado");
+      alert("Erreur lors du chargement de l’examen blanc");
     }
     setLoading(false);
   }
@@ -41,12 +41,12 @@ export default function Simulado() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ respostas: lista }),
       });
-      if (!r.ok) throw new Error(`Erro ${r.status}`);
+      if (!r.ok) throw new Error(`Erreur ${r.status}`);
       setResultado(await r.json());
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e: any) {
       console.error("❌ Submit erro:", e);
-      alert("Erro ao submeter simulado");
+      alert("Erreur lors de la soumission de l’examen blanc");
     }
   }
 
@@ -56,12 +56,12 @@ export default function Simulado() {
   if (!questoes) {
     return (
       <div>
-        <h1 className="font-display text-2xl font-extrabold mb-1">Simulado de Exame Teórico</h1>
+        <h1 className="font-display text-2xl font-extrabold mb-1">Examen blanc théorique</h1>
         <p className="text-sm text-asfalto/60 mb-6">
-          20 questões aleatórias baseadas no Código de Estrada de Cabo Verde. Meta de aprovação: 80%.
+          20 questions aléatoires basées sur le code de la route du Cap-Vert. Seuil de réussite : 80 %.
         </p>
         <button className="btn-primary" onClick={iniciar} disabled={loading}>
-          {loading ? "A preparar..." : "Iniciar simulado"}
+          {loading ? "Préparation..." : "Commencer l’examen blanc"}
         </button>
       </div>
     );
@@ -71,9 +71,9 @@ export default function Simulado() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display text-2xl font-extrabold">Simulado</h1>
+          <h1 className="font-display text-2xl font-extrabold">Examen blanc</h1>
           {!resultado && (
-            <p className="text-sm text-asfalto/60">{respondidas}/{questoes.length} respondidas</p>
+            <p className="text-sm text-asfalto/60">{respondidas}/{questoes.length} réponses</p>
           )}
         </div>
         {resultado && (
@@ -82,7 +82,7 @@ export default function Simulado() {
               {Math.round((resultado.acertos / resultado.total) * 100)}%
             </p>
             <p className={`text-sm font-semibold ${resultado.acertos / resultado.total >= 0.8 ? "text-verde" : "text-stop"}`}>
-              {resultado.acertos / resultado.total >= 0.8 ? "Aprovado no simulado" : "Abaixo da meta de 80%"}
+              {resultado.acertos / resultado.total >= 0.8 ? "Examen blanc réussi" : "En dessous du seuil de 80 %"}
             </p>
           </div>
         )}
@@ -129,13 +129,13 @@ export default function Simulado() {
         {!resultado ? (
           <button className="btn-primary" onClick={submeter} disabled={respondidas < questoes.length}>
             {respondidas < questoes.length
-              ? `Responda a todas (faltam ${questoes.length - respondidas})`
-              : "Submeter e corrigir"}
+              ? `Répondez à toutes les questions (${questoes.length - respondidas} restantes)`
+              : "Soumettre et corriger"}
           </button>
         ) : (
           <>
-            <button className="btn-primary" onClick={iniciar}>Novo simulado</button>
-            <Link href="/aluno/resultados" className="btn-dark">Ver os meus resultados</Link>
+            <button className="btn-primary" onClick={iniciar}>Nouvel examen blanc</button>
+            <Link href="/aluno/resultados" className="btn-dark">Voir mes résultats</Link>
           </>
         )}
       </div>

@@ -20,7 +20,7 @@ export default function ModulosAluno() {
   useEffect(() => {
     fetch("/api/modulos")
       .then((r) => {
-        if (!r.ok) throw new Error(`Erro ${r.status}`);
+        if (!r.ok) throw new Error(`Erreur ${r.status}`);
         return r.json();
       })
       .then((d) => {
@@ -28,20 +28,20 @@ export default function ModulosAluno() {
         setLoading(false);
       })
       .catch(() => {
-        setErro("Erro ao carregar módulos. Atualize a página.");
+        setErro("Erreur lors du chargement des modules. Actualisez la page.");
         setLoading(false);
       });
   }, []);
 
   if (erro) return <p className="text-sm text-stop">{erro}</p>;
-  if (loading) return <p className="text-sm text-asfalto/50">A carregar módulos...</p>;
+  if (loading) return <p className="text-sm text-asfalto/50">Chargement des modules...</p>;
   if (modulos.length === 0)
-    return <p className="text-sm text-asfalto/50">Ainda não há módulos disponíveis. Contacte a escola.</p>;
+    return <p className="text-sm text-asfalto/50">Aucun module disponible pour le moment. Contactez l’auto-école.</p>;
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold mb-1">Módulos e Vídeos</h1>
-      <p className="text-sm text-asfalto/60 mb-6">Os 23 capítulos do Manual de Código de Estrada de Cabo Verde.</p>
+      <h1 className="font-display text-2xl font-extrabold mb-1">Modules et vidéos</h1>
+      <p className="text-sm text-asfalto/60 mb-6">Les 23 chapitres du manuel de code de la route du Cap-Vert.</p>
       <div className="space-y-2">
         {modulos.map((m) => (
           <Link
@@ -59,7 +59,8 @@ export default function ModulosAluno() {
             <div className="flex-1">
               <p className="font-semibold">{m.titulo}</p>
               <p className="text-xs text-asfalto/50">
-                {m.videoUrl ? "Vídeo disponível" : "Sem vídeo"} · {m._count.questoes} questões
+                {m.videoUrl ? "Vidéo disponible" : "Sans vidéo"} · {m._count.questoes}{" "}
+                {m._count.questoes > 1 ? "questions" : "question"}
               </p>
             </div>
             <span className="text-asfalto/30">→</span>

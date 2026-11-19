@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function resetAdmin() {
   const passe = process.env.ADMIN_PASSWORD;
   if (!passe) {
-    console.error("Defina ADMIN_PASSWORD nas variáveis de ambiente antes de correr este script.");
+    console.error("Définissez ADMIN_PASSWORD dans les variables d'environnement avant d'exécuter ce script.");
     process.exit(1);
   }
   const hash = await bcrypt.hash(passe, 10);
@@ -20,7 +20,7 @@ async function resetAdmin() {
       role: "ADMIN"
     },
   });
-  console.log("✅ Palavra-passe do admin renovada a partir de ADMIN_PASSWORD.");
+  console.log("✅ Mot de passe de l'administrateur renouvelé à partir d'ADMIN_PASSWORD.");
 }
 
 resetAdmin().catch(err => {

@@ -22,7 +22,7 @@ export default function MinhasAulas() {
   useEffect(() => {
     fetch("/api/agendamentos")
       .then((r) => {
-        if (!r.ok) throw new Error(`Erro ${r.status}`);
+        if (!r.ok) throw new Error(`Erreur ${r.status}`);
         return r.json();
       })
       .then((d) => {
@@ -31,32 +31,32 @@ export default function MinhasAulas() {
       })
       .catch((e) => {
         console.error("❌ Agendamentos erro:", e);
-        setErro("Erro ao carregar agendamentos");
+        setErro("Erreur lors du chargement des rendez-vous");
         setLoading(false);
       });
   }, []);
 
   if (erro) return <p className="text-sm text-stop">{erro}</p>;
-  if (loading) return <p className="text-sm text-asfalto/50">A carregar...</p>;
+  if (loading) return <p className="text-sm text-asfalto/50">Chargement...</p>;
   if (aulas.length === 0)
     return (
       <div>
-        <h1 className="font-display text-2xl font-extrabold mb-6">Minhas Aulas</h1>
+        <h1 className="font-display text-2xl font-extrabold mb-6">Mes rendez-vous</h1>
         <div className="card text-center py-8">
-          <p className="text-asfalto/60 mb-3">Nenhuma aula agendada no momento.</p>
-          <p className="text-sm text-asfalto/50">Contacte o administrador para agendar.</p>
+          <p className="text-asfalto/60 mb-3">Aucun rendez-vous planifié pour le moment.</p>
+          <p className="text-sm text-asfalto/50">Contactez l’administrateur pour planifier un rendez-vous.</p>
         </div>
       </div>
     );
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold mb-6">Minhas Aulas</h1>
+      <h1 className="font-display text-2xl font-extrabold mb-6">Mes rendez-vous</h1>
 
       <div className="space-y-4">
         {aulas.map((aula) => {
           const dataObj = new Date(aula.data);
-          const dataFormatada = dataObj.toLocaleDateString("pt-PT");
+          const dataFormatada = dataObj.toLocaleDateString("fr-FR");
           const hoje = new Date();
           const passado = dataObj < hoje;
 
@@ -68,9 +68,9 @@ export default function MinhasAulas() {
                     <span className="font-semibold">{aula.tipo}</span>
                     <span
                       className={`text-xs px-2 py-1 rounded ${
-                        aula.status === "Confirmado"
+                        aula.status === "Confirmé"
                           ? "bg-verde/20 text-verde"
-                          : aula.status === "Cancelado"
+                          : aula.status === "Annulé"
                           ? "bg-stop/20 text-stop"
                           : "bg-asfalto/20"
                       }`}

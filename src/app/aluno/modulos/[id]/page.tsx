@@ -33,7 +33,7 @@ export default function ModuloDetalhe() {
     fetch(`/api/modulos/${id}`).then((r) => r.json()).then(setModulo);
   }, [id]);
 
-  if (!modulo) return <p className="text-sm text-asfalto/50">A carregar...</p>;
+  if (!modulo) return <p className="text-sm text-asfalto/50">Chargement...</p>;
 
   const embed = youtubeEmbed(modulo.videoUrl);
   const mapaDetalhe = new Map(resultado?.detalhes.map((d) => [d.questaoId, d]));
@@ -63,7 +63,7 @@ export default function ModuloDetalhe() {
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-widest text-asfalto/40 mb-1">Módulo {modulo.numero}</p>
+      <p className="text-xs uppercase tracking-widest text-asfalto/40 mb-1">Module {modulo.numero}</p>
       <h1 className="font-display text-2xl font-extrabold mb-1">{modulo.titulo}</h1>
       <p className="text-sm text-asfalto/60 mb-6">{modulo.descricao}</p>
 
@@ -81,13 +81,13 @@ export default function ModuloDetalhe() {
         </div>
       ) : (
         <div className="card mb-6 text-sm text-asfalto/50">
-          Este módulo ainda não tem vídeo. Estude o capítulo {modulo.numero} do Manual e responda às questões abaixo.
+          Ce module n’a pas encore de vidéo. Étudiez le chapitre {modulo.numero} du manuel et répondez aux questions ci-dessous.
         </div>
       )}
 
       {modulo.questoes.length > 0 && (
         <div className="mb-6">
-          <h2 className="font-display font-bold text-lg mb-3">Exercícios deste módulo</h2>
+          <h2 className="font-display font-bold text-lg mb-3">Exercices de ce module</h2>
           <div className="space-y-4">
             {modulo.questoes.map((q, i) => {
               const det = mapaDetalhe.get(q.id);
@@ -129,13 +129,13 @@ export default function ModuloDetalhe() {
 
           {!resultado ? (
             <button className="btn-primary mt-4" onClick={submeter}>
-              Corrigir respostas
+              Corriger les réponses
             </button>
           ) : (
             <div className="card mt-4 flex items-center justify-between">
               <p className="font-display font-extrabold text-xl">
-                {resultado.acertos}/{resultado.total} certas (
-                {Math.round((resultado.acertos / resultado.total) * 100)}%)
+                {resultado.acertos}/{resultado.total} bonnes réponses (
+                {Math.round((resultado.acertos / resultado.total) * 100)} %)
               </p>
             </div>
           )}
@@ -144,10 +144,10 @@ export default function ModuloDetalhe() {
 
       {!modulo.concluido ? (
         <button className="btn-dark" onClick={marcarConcluido}>
-          Marcar módulo como concluído
+          Marquer le module comme terminé
         </button>
       ) : (
-        <p className="text-sm font-semibold text-verde">✓ Módulo concluído</p>
+        <p className="text-sm font-semibold text-verde">✓ Module terminé</p>
       )}
     </div>
   );

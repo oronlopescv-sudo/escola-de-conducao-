@@ -20,7 +20,7 @@ export default function Sidebar({
 
   return (
     <aside className="fixed inset-y-0 left-0 w-60 bg-asfalto text-white flex flex-col">
-      {/* linha central da estrada */}
+      {/* ligne centrale de la route */}
       <div
         className="absolute inset-y-0 right-0 w-1"
         style={{
@@ -32,7 +32,7 @@ export default function Sidebar({
         <div className="flex items-center gap-2">
           <span className="inline-block h-6 w-6 rotate-45 rounded bg-sinal border-2 border-white" />
           <span className="font-display font-extrabold text-lg">
-            AutoEscola <span className="text-sinal">CV</span>
+            Auto-École <span className="text-sinal">CV</span>
           </span>
         </div>
         <p className="mt-1 text-[11px] uppercase tracking-widest text-white/40">{titulo}</p>
@@ -55,7 +55,7 @@ export default function Sidebar({
       </nav>
       <div className="p-3 border-t border-white/10">
         <button onClick={sair} className="w-full rounded-lg px-3 py-2 text-sm text-white/60 hover:bg-white/10 hover:text-white text-left">
-          Terminar sessão
+          Déconnexion
         </button>
       </div>
     </aside>

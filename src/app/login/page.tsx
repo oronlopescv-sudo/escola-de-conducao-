@@ -22,19 +22,19 @@ export default function Login() {
       setLoading(false);
       if (!r.ok) {
         const d = await r.json();
-        setErro(d.erro || "Falha no início de sessão.");
+        setErro(d.erro || "Échec de la connexion.");
         return;
       }
       const d = await r.json();
       if (d.success) {
-        // Navegação completa para garantir que o middleware lê o cookie novo
+        // Navigation complète pour garantir que le middleware lit le nouveau cookie
         window.location.href = d.role === "ADMIN" ? "/admin" : "/aluno";
       } else {
-        setErro("Resposta inválida do servidor");
+        setErro("Réponse invalide du serveur");
       }
     } catch (err: any) {
       setLoading(false);
-      setErro(err.message || "Erro de ligação. Tente novamente.");
+      setErro(err.message || "Erreur de connexion. Veuillez réessayer.");
     }
   }
 
@@ -45,23 +45,23 @@ export default function Login() {
           <div className="inline-flex items-center gap-3">
             <span className="inline-block h-10 w-10 rotate-45 rounded-md bg-sinal border-4 border-white shadow-lg" />
             <h1 className="font-display text-3xl font-extrabold text-white tracking-tight">
-              AutoEscola <span className="text-sinal">CV</span>
+              Auto-École <span className="text-sinal">CV</span>
             </h1>
           </div>
-          <p className="mt-2 text-sm text-white/60">Código de Estrada de Cabo Verde</p>
+          <p className="mt-2 text-sm text-white/60">Code de la route du Cap-Vert</p>
         </div>
         <form onSubmit={entrar} className="card space-y-4">
           <div>
-            <label className="label">Email</label>
+            <label className="label">E-mail</label>
             <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div>
-            <label className="label">Palavra-passe</label>
+            <label className="label">Mot de passe</label>
             <input className="input" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required />
           </div>
           {erro && <p className="text-sm text-stop">{erro}</p>}
           <button type="submit" className="btn-primary w-full" disabled={loading}>
-            {loading ? "A entrar..." : "Entrar"}
+            {loading ? "Connexion en cours..." : "Connexion"}
           </button>
         </form>
       </div>

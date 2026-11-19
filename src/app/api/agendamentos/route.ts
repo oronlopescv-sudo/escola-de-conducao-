@@ -34,7 +34,7 @@ function serializar(a: AgendamentoDb) {
 
 export async function GET() {
   const s = await sessaoAtual();
-  if (!s) return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
+  if (!s) return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
 
   if (s.role === "ADMIN") {
     const todos = await prisma.agendamento.findMany({
@@ -57,21 +57,21 @@ export async function GET() {
 export async function POST(req: Request) {
   const s = await sessaoAtual();
   if (s?.role !== "ADMIN") {
-    return NextResponse.json({ erro: "Apenas admin pode criar agendamentos" }, { status: 403 });
+    return NextResponse.json({ erro: "Seul l'admin peut créer des rendez-vous" }, { status: 403 });
   }
 
   const b = await req.json();
   if (!b.alunoId || !b.data || !b.hora) {
-    return NextResponse.json({ erro: "Aluno, data e hora são obrigatórios." }, { status: 400 });
+    return NextResponse.json({ erro: "Élève, date et heure sont obligatoires." }, { status: 400 });
   }
 
   const aluno = await prisma.aluno.findUnique({ where: { id: b.alunoId } });
-  if (!aluno) return NextResponse.json({ erro: "Aluno não encontrado." }, { status: 404 });
+  if (!aluno) return NextResponse.json({ erro: "Élève introuvable." }, { status: 404 });
 
   const novo = await prisma.agendamento.create({
     data: {
       alunoId: b.alunoId,
-      tipo: b.tipo === "Prática" ? "Prática" : "Teórica",
+      tipo: b.tipo === "Pratique" ? "Pratique" : "Théorique",
       data: new Date(b.data),
       hora: String(b.hora),
       duracao: Number(b.duracao) > 0 ? Number(b.duracao) : 60,

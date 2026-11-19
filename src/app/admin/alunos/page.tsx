@@ -60,7 +60,7 @@ export default function Alunos() {
       });
       if (!r.ok) {
         const d = await r.json();
-        setErro(d.erro || "Erro ao criar aluno.");
+        setErro(d.erro || "Erreur lors de la création de l'élève.");
         return;
       }
       const d = await r.json();
@@ -70,7 +70,7 @@ export default function Alunos() {
       if (d.credenciais) setCredenciais(d.credenciais);
       carregar();
     } catch {
-      setErro("Erro de ligação. Tente novamente.");
+      setErro("Erreur de connexion. Veuillez réessayer.");
     } finally {
       setAGuardar(false);
     }
@@ -78,7 +78,7 @@ export default function Alunos() {
 
   async function copiarCredenciais() {
     if (!credenciais) return;
-    const texto = `AutoEscola CV — Acesso do aluno\nNome: ${credenciais.nome}\nSite: ${window.location.origin}/login\nEmail: ${credenciais.email}\nPalavra-passe: ${credenciais.senha}`;
+    const texto = `Auto-École CV — Accès élève\nNom : ${credenciais.nome}\nSite : ${window.location.origin}/login\nE-mail : ${credenciais.email}\nMot de passe : ${credenciais.senha}`;
     try {
       await navigator.clipboard.writeText(texto);
       setCopiado(true);
@@ -98,7 +98,7 @@ export default function Alunos() {
   }
 
   async function eliminar(a: Aluno) {
-    if (!confirm(`Eliminar o aluno ${a.user.nome}? Esta ação é permanente.`)) return;
+    if (!confirm(`Supprimer l'élève ${a.user.nome} ? Cette action est définitive.`)) return;
     await fetch(`/api/alunos/${a.id}`, { method: "DELETE" });
     carregar();
   }
@@ -106,44 +106,44 @@ export default function Alunos() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-2xl font-extrabold">Alunos</h1>
+        <h1 className="font-display text-2xl font-extrabold">Élèves</h1>
         <button className="btn-primary" onClick={() => setMostrarForm(!mostrarForm)}>
-          {mostrarForm ? "Fechar" : "Inscrever aluno"}
+          {mostrarForm ? "Fermer" : "Inscrire un élève"}
         </button>
       </div>
 
       {mostrarForm && (
         <form onSubmit={criar} className="card mb-6 grid md:grid-cols-2 gap-4">
           <div className="md:col-span-2 rounded-lg bg-sinal/10 border border-sinal/40 p-3 text-sm">
-            Preencha os dados do aluno. Ao guardar, o sistema <b>gera automaticamente a palavra-passe</b> e
-            mostra as credenciais de acesso para entregar ao aluno.
+            Remplissez les informations de l'élève. À l'enregistrement, le système <b>génère automatiquement le mot de passe</b> et
+            affiche les identifiants de connexion à remettre à l'élève.
           </div>
           <div>
-            <label className="label">Nome completo *</label>
+            <label className="label">Nom complet *</label>
             <input className="input" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
           </div>
           <div>
-            <label className="label">Email (será o login do aluno) *</label>
+            <label className="label">E-mail (servira d'identifiant à l'élève) *</label>
             <input className="input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
           </div>
           <div>
-            <label className="label">Telefone</label>
+            <label className="label">Téléphone</label>
             <input className="input" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
           </div>
           <div>
-            <label className="label">Documento de identificação (BI/CNI)</label>
+            <label className="label">Document d'identification (BI/CNI)</label>
             <input className="input" value={form.documento} onChange={(e) => setForm({ ...form, documento: e.target.value })} />
           </div>
           <div>
-            <label className="label">Morada</label>
+            <label className="label">Adresse</label>
             <input className="input" value={form.morada} onChange={(e) => setForm({ ...form, morada: e.target.value })} />
           </div>
           <div>
-            <label className="label">Data de nascimento</label>
+            <label className="label">Date de naissance</label>
             <input className="input" type="date" value={form.dataNascimento} onChange={(e) => setForm({ ...form, dataNascimento: e.target.value })} />
           </div>
           <div>
-            <label className="label">Categoria da carta</label>
+            <label className="label">Catégorie du permis</label>
             <select className="input" value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })}>
               {categorias.map((c) => (
                 <option key={c}>{c}</option>
@@ -151,18 +151,18 @@ export default function Alunos() {
             </select>
           </div>
           <div>
-            <label className="label">Palavra-passe (opcional — vazio = gerada automaticamente)</label>
+            <label className="label">Mot de passe (optionnel — vide = généré automatiquement)</label>
             <input
               className="input"
               value={form.senha}
-              placeholder="Deixar vazio para gerar"
+              placeholder="Laisser vide pour générer"
               onChange={(e) => setForm({ ...form, senha: e.target.value })}
             />
           </div>
           {erro && <p className="text-sm text-stop md:col-span-2">{erro}</p>}
           <div className="md:col-span-2">
             <button className="btn-dark" disabled={aGuardar}>
-              {aGuardar ? "A guardar..." : "Guardar inscrição"}
+              {aGuardar ? "Enregistrement..." : "Enregistrer l'inscription"}
             </button>
           </div>
         </form>
@@ -171,25 +171,25 @@ export default function Alunos() {
       {credenciais && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="font-display text-xl font-extrabold mb-1">✅ Aluno inscrito!</h2>
+            <h2 className="font-display text-xl font-extrabold mb-1">✅ Élève inscrit !</h2>
             <p className="text-sm text-asfalto/60 mb-4">
-              Entregue estas credenciais ao aluno. Por segurança, a palavra-passe{" "}
-              <b>não voltará a ser mostrada</b>.
+              Remettez ces identifiants à l'élève. Par sécurité, le mot de passe{" "}
+              <b>ne sera plus jamais affiché</b>.
             </p>
             <div className="rounded-lg border border-linha bg-asfalto/5 p-4 space-y-2 text-sm">
-              <p><span className="text-asfalto/50">Nome:</span> <b>{credenciais.nome}</b></p>
-              <p><span className="text-asfalto/50">Email (login):</span> <b>{credenciais.email}</b></p>
+              <p><span className="text-asfalto/50">Nom :</span> <b>{credenciais.nome}</b></p>
+              <p><span className="text-asfalto/50">E-mail (identifiant) :</span> <b>{credenciais.email}</b></p>
               <p>
-                <span className="text-asfalto/50">Palavra-passe:</span>{" "}
+                <span className="text-asfalto/50">Mot de passe :</span>{" "}
                 <b className="font-mono text-lg tracking-widest">{credenciais.senha}</b>
               </p>
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={copiarCredenciais} className="btn-primary flex-1">
-                {copiado ? "✓ Copiado" : "Copiar credenciais"}
+                {copiado ? "✓ Copié" : "Copier les identifiants"}
               </button>
               <button onClick={() => setCredenciais(null)} className="btn-dark flex-1">
-                Fechar
+                Fermer
               </button>
             </div>
           </div>
@@ -200,12 +200,12 @@ export default function Alunos() {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs uppercase tracking-wide text-asfalto/50 border-b border-linha">
-              <th className="p-4">Nome</th>
-              <th className="p-4">Email</th>
-              <th className="p-4">Categoria</th>
-              <th className="p-4">Módulos</th>
-              <th className="p-4">Simulados</th>
-              <th className="p-4">Estado</th>
+              <th className="p-4">Nom</th>
+              <th className="p-4">E-mail</th>
+              <th className="p-4">Catégorie</th>
+              <th className="p-4">Modules</th>
+              <th className="p-4">Examens blancs</th>
+              <th className="p-4">Statut</th>
               <th className="p-4"></th>
             </tr>
           </thead>
@@ -226,12 +226,12 @@ export default function Alunos() {
                       a.ativo ? "bg-verde/15 text-verde" : "bg-stop/15 text-stop"
                     }`}
                   >
-                    {a.ativo ? "Ativo" : "Inativo"}
+                    {a.ativo ? "Actif" : "Inactif"}
                   </button>
                 </td>
                 <td className="p-4 text-right">
                   <button onClick={() => eliminar(a)} className="text-xs text-stop hover:underline">
-                    Eliminar
+                    Supprimer
                   </button>
                 </td>
               </tr>
@@ -239,7 +239,7 @@ export default function Alunos() {
             {alunos.length === 0 && (
               <tr>
                 <td className="p-6 text-asfalto/50" colSpan={7}>
-                  Ainda não há alunos inscritos. Use "Inscrever aluno" para começar.
+                  Aucun élève inscrit pour le moment. Utilisez « Inscrire un élève » pour commencer.
                 </td>
               </tr>
             )}

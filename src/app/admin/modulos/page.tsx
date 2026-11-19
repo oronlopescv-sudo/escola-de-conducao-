@@ -40,9 +40,9 @@ export default function Modulos() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold mb-2">Módulos e Vídeos</h1>
+      <h1 className="font-display text-2xl font-extrabold mb-2">Modules et vidéos</h1>
       <p className="text-sm text-asfalto/60 mb-6">
-        Os 23 capítulos do Manual de Código de Estrada CV. Cole o link do YouTube em cada módulo para o aluno assistir.
+        Les 23 chapitres du Manuel du Code de la route CV. Collez le lien YouTube dans chaque module pour que l'élève puisse le visionner.
       </p>
       <div className="space-y-3">
         {modulos.map((m) => (
@@ -56,26 +56,26 @@ export default function Modulos() {
                   <p className="font-semibold">{m.titulo}</p>
                   <p className="text-sm text-asfalto/60">{m.descricao}</p>
                   <p className="mt-1 text-xs text-asfalto/40">
-                    {m._count.questoes} questões · {m.videoUrl ? "Vídeo associado" : "Sem vídeo"}
+                    {m._count.questoes} questions · {m.videoUrl ? "Vidéo associée" : "Sans vidéo"}
                   </p>
                 </div>
               </div>
               <button className="btn-dark" onClick={() => (editando === m.id ? setEditando(null) : abrir(m))}>
-                {editando === m.id ? "Fechar" : "Editar"}
+                {editando === m.id ? "Fermer" : "Modifier"}
               </button>
             </div>
             {editando === m.id && (
               <div className="mt-4 grid gap-3 border-t border-linha pt-4">
                 <div>
-                  <label className="label">Título</label>
+                  <label className="label">Titre</label>
                   <input className="input" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} />
                 </div>
                 <div>
-                  <label className="label">Descrição</label>
+                  <label className="label">Description</label>
                   <input className="input" value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
                 </div>
                 <div>
-                  <label className="label">Link do vídeo (YouTube)</label>
+                  <label className="label">Lien de la vidéo (YouTube)</label>
                   <input
                     className="input"
                     placeholder="https://www.youtube.com/watch?v=..."
@@ -85,7 +85,7 @@ export default function Modulos() {
                 </div>
                 <div>
                   <button className="btn-primary" onClick={() => guardar(m.id)}>
-                    Guardar alterações
+                    Enregistrer les modifications
                   </button>
                 </div>
               </div>

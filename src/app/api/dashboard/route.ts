@@ -7,7 +7,7 @@ import { sessaoAtual } from "@/lib/auth";
 export async function GET() {
   try {
     const s = await sessaoAtual();
-    if (!s) return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
+    if (!s) return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
 
     if (s.role === "ADMIN") {
       const [totalAlunos, ativos, totalQuestoes, totalModulos, tentativas] = await Promise.all([
@@ -45,7 +45,7 @@ export async function GET() {
 
     // Dashboard do aluno
     const aluno = await prisma.aluno.findUnique({ where: { userId: s.userId } });
-    if (!aluno) return NextResponse.json({ erro: "Aluno não encontrado" }, { status: 404 });
+    if (!aluno) return NextResponse.json({ erro: "Élève introuvable" }, { status: 404 });
 
     const [totalModulos, modulosConcluidos, tentativas] = await Promise.all([
       prisma.modulo.count(),
@@ -70,7 +70,7 @@ export async function GET() {
       tentativas,
     });
   } catch (error: any) {
-    console.error("❌ Dashboard erro:", error);
-    return NextResponse.json({ erro: "Erro ao carregar dashboard" }, { status: 500 });
+    console.error("❌ Erreur dashboard :", error);
+    return NextResponse.json({ erro: "Erreur au chargement du tableau de bord" }, { status: 500 });
   }
 }

@@ -1,54 +1,59 @@
-# AutoEscola CV
+# Auto-École CV
 
-Plataforma de gestão para escola de condução em Cabo Verde. Painel administrativo + portal do aluno com vídeos e exercícios baseados no **Manual de Código de Estrada CV** e no **Decreto-Legislativo nº 4/2005**.
+Plateforme de gestion pour auto-école au Cap-Vert. Panneau d'administration + portail de l'élève avec vidéos et exercices basés sur le **Manuel du Code de la route du Cap-Vert** et le **Décret-législatif n° 4/2005**.
 
 ## Stack
 Next.js 14 (App Router, TypeScript) · Prisma · PostgreSQL · JWT (cookie httpOnly) · Tailwind CSS
 
-## Funcionalidades
-**Admin:** painel de indicadores, gestão de alunos (com validação de idade mínima por categoria — art. 122º), gestão dos 23 módulos com vídeos YouTube, banco de questões.
-**Aluno:** progresso na "estrada", módulos com vídeo + exercícios por módulo, simulado de 20 questões com correção automática e explicações, histórico de resultados (meta 80%).
+## Fonctionnalités
+**Admin :** tableau de bord des indicateurs, gestion des élèves (avec validation de l'âge minimal par catégorie — art. 122º), gestion des 23 modules avec vidéos YouTube, banque de questions.
+**Élève :** progression sur la « route », modules avec vidéo + exercices par module, examen blanc de 20 questions avec correction automatique et explications, historique des résultats (objectif 80 %).
 
-## Arranque rápido (local)
+## Démarrage rapide (local)
 ```bash
-cp .env.example .env        # editar DATABASE_URL e JWT_SECRET
+cp .env.example .env        # éditer DATABASE_URL et JWT_SECRET
 npm install
-npx prisma db push          # cria as tabelas
-npm run db:seed             # 23 módulos + 40+ questões + contas demo
+npx prisma db push          # crée les tables
+npm run db:seed             # 23 modules + 40+ questions + comptes démo
 npm run dev
 ```
-Contas demo criadas pelo seed: `aluno@autoescola.cv / aluno123` (só com `SEED_DEMO=1`).
-O admin não tem palavra-passe fixa no código: cria-se/renova-se com `ADMIN_PASSWORD` (variável de ambiente) via seed, `npm run admin:reset` ou no primeiro arranque. Em produção defina `ADMIN_PASSWORD` e `JWT_SECRET` no painel.
+Comptes de démonstration créés par le seed : `aluno@autoescola.cv / aluno123` (uniquement avec `SEED_DEMO=1`).
+Le compte admin n'a pas de mot de passe fixe dans le code : il est créé ou renouvelé via la variable d'environnement `ADMIN_PASSWORD`, par le seed, `npm run admin:reset` ou au premier démarrage de l'application.
 
-## Deploy com Docker (VPS / Easypanel)
+## Comptes et variables d'environnement
+- `DATABASE_URL` et `JWT_SECRET` se définissent dans les variables d'environnement du panneau (EasyPanel) : rien n'est stocké dans le dépôt ni dans le code.
+- `ADMIN_PASSWORD` crée le compte admin (`admin@autoescola.cv`) : via le seed (`npm run db:seed`), via `npm run admin:reset`, ou automatiquement au premier démarrage si aucun compte ADMIN n'existe encore.
+- Le compte élève de démonstration (`aluno@autoescola.cv / aluno123`) n'est créé que si `SEED_DEMO=1` est défini — ne pas l'utiliser en production.
+
+## Déploiement avec Docker (VPS / EasyPanel)
 ```bash
 echo "JWT_SECRET=$(openssl rand -hex 32)" > .env
 echo "DB_PASSWORD=$(openssl rand -hex 16)" >> .env
 docker compose up -d --build
-# primeira vez: criar tabelas e seed
+# première fois : créer les tables et lancer le seed
 docker compose exec app npx prisma db push
 docker compose exec app npx tsx prisma/seed.ts
 ```
-No Easypanel: criar serviço PostgreSQL + serviço App apontando para este repositório (Dockerfile incluído), definindo `DATABASE_URL` e `JWT_SECRET`.
+Sur EasyPanel : créer un service PostgreSQL + un service App pointant vers ce dépôt (Dockerfile inclus), en définissant `DATABASE_URL` et `JWT_SECRET` dans les variables d'environnement du panneau.
 
 ## Scripts
-| comando | descrição |
+| commande | description |
 |---|---|
-| `npm run dev` | desenvolvimento |
-| `npm run build` | build de produção (inclui prisma generate) |
-| `npm run db:push` | sincronizar schema com a BD |
-| `npm run db:seed` | popular módulos, questões e contas demo |
-| `npm test` | testes das regras de negócio |
+| `npm run dev` | développement |
+| `npm run build` | build de production (inclut prisma generate) |
+| `npm run db:push` | synchroniser le schéma avec la base de données |
+| `npm run db:seed` | alimenter les modules, les questions et les comptes démo |
+| `npm test` | tests des règles métier |
 
-## Segurança
-- JWT httpOnly, `sameSite=lax` (mitiga CSRF), `secure` em produção
-- `JWT_SECRET` obrigatório em produção (falha cedo se ausente)
-- Rate limiting no login (10 tentativas / 15 min por IP)
-- Comparação bcrypt em tempo constante (anti user-enumeration)
-- Autorização por role em todas as rotas API + middleware nas páginas
-- O aluno nunca recebe a resposta correta antes de submeter
-- Headers de segurança (X-Frame-Options, nosniff, Referrer-Policy)
-- Prisma (queries parametrizadas) + validação de payloads
+## Sécurité
+- JWT httpOnly, `sameSite=lax` (atténue le CSRF), `secure` en production
+- `JWT_SECRET` obligatoire en production (échoue tôt si absent)
+- Limite de débit sur la connexion (10 tentatives / 15 min par IP)
+- Comparaison bcrypt à temps constant (anti énumération d'utilisateurs)
+- Autorisation par rôle sur toutes les routes API + middleware sur les pages
+- L'élève ne reçoit jamais la bonne réponse avant d'avoir soumis
+- En-têtes de sécurité (X-Frame-Options, nosniff, Referrer-Policy)
+- Prisma (requêtes paramétrées) + validation des payloads
 
-## Melhorias futuras
-Gestão de instrutores/veículos/aulas/financeiro (spec completo), notificações SMS/WhatsApp, upload de documentos, relatórios PDF/Excel, rate limit com Redis para multi-instância.
+## Améliorations futures
+Gestion des instructeurs/véhicules/cours/finances (spec complète), notifications SMS/WhatsApp, téléversement de documents, rapports PDF/Excel, limite de débit avec Redis pour les architectures multi-instances.

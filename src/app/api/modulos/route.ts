@@ -8,7 +8,7 @@ import { garantirDadosBase } from "@/lib/bootstrap";
 export async function GET() {
   try {
     const s = await sessaoAtual();
-    if (!s) return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
+    if (!s) return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
     await garantirDadosBase();
 
     const modulos = await prisma.modulo.findMany({
@@ -34,7 +34,7 @@ export async function GET() {
 
     return NextResponse.json(modulos);
   } catch (error: any) {
-    console.error("❌ Módulos erro:", error);
-    return NextResponse.json({ erro: "Erro ao carregar módulos" }, { status: 500 });
+    console.error("❌ Erreur modules :", error);
+    return NextResponse.json({ erro: "Erreur au chargement des modules" }, { status: 500 });
   }
 }

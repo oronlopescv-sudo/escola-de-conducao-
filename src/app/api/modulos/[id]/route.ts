@@ -6,12 +6,12 @@ import { sessaoAtual } from "@/lib/auth";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   const s = await sessaoAtual();
-  if (!s) return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
+  if (!s) return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
   const modulo = await prisma.modulo.findUnique({
     where: { id: params.id },
     include: { questoes: true },
   });
-  if (!modulo) return NextResponse.json({ erro: "Módulo não encontrado" }, { status: 404 });
+  if (!modulo) return NextResponse.json({ erro: "Module introuvable" }, { status: 404 });
 
   let concluido = false;
   if (s.role === "ALUNO") {
@@ -23,7 +23,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
       concluido = !!p?.concluido;
     }
   }
-  // Aluno não recebe a resposta correta antes de responder
+  // L'élève ne reçoit pas la bonne réponse avant d'avoir répondu
   const questoes =
     s.role === "ALUNO"
       ? modulo.questoes.map(({ correta, explicacao, ...q }: { correta: string; explicacao: string | null; [k: string]: unknown }) => q)
@@ -33,7 +33,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const s = await sessaoAtual();
-  if (s?.role !== "ADMIN") return NextResponse.json({ erro: "Não autorizado" }, { status: 403 });
+  if (s?.role !== "ADMIN") return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
   const b = await req.json();
   const modulo = await prisma.modulo.update({
     where: { id: params.id },

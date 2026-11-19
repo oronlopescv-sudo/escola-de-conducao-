@@ -22,7 +22,7 @@ export default function PerfilAluno() {
   useEffect(() => {
     fetch("/api/alunos/perfil")
       .then((r) => {
-        if (!r.ok) throw new Error(`Erro ${r.status}`);
+        if (!r.ok) throw new Error(`Erreur ${r.status}`);
         return r.json();
       })
       .then((d) => {
@@ -44,22 +44,22 @@ export default function PerfilAluno() {
     if (r.ok) {
       const d = await r.json();
       setAluno(d);
-      alert("✅ Perfil atualizado!");
+      alert("✅ Profil mis à jour !");
     } else {
-      alert("❌ Erro ao atualizar");
+      alert("❌ Erreur lors de la mise à jour");
     }
   }
 
-  if (loading) return <p className="text-sm text-asfalto/50">A carregar...</p>;
-  if (!aluno) return <p className="text-sm text-stop">Erro ao carregar o perfil. Atualize a página.</p>;
+  if (loading) return <p className="text-sm text-asfalto/50">Chargement...</p>;
+  if (!aluno) return <p className="text-sm text-stop">Erreur lors du chargement du profil. Actualisez la page.</p>;
 
   return (
     <div className="max-w-2xl">
-      <h1 className="font-display text-2xl font-extrabold mb-6">Meu Perfil</h1>
+      <h1 className="font-display text-2xl font-extrabold mb-6">Mon profil</h1>
 
       <div className="card space-y-4">
         <div>
-          <label className="label">Nome Completo</label>
+          <label className="label">Nom complet</label>
           <input
             type="text"
             value={form.nome || ""}
@@ -70,7 +70,7 @@ export default function PerfilAluno() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">Email</label>
+            <label className="label">E-mail</label>
             <input
               type="email"
               value={form.email || ""}
@@ -79,7 +79,7 @@ export default function PerfilAluno() {
             />
           </div>
           <div>
-            <label className="label">Telefone</label>
+            <label className="label">Téléphone</label>
             <input
               type="tel"
               value={form.telefone || ""}
@@ -91,7 +91,7 @@ export default function PerfilAluno() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">BI (Bilhete de Identidade)</label>
+            <label className="label">Carte d’identité (BI)</label>
             <input
               type="text"
               value={form.bi || ""}
@@ -100,7 +100,7 @@ export default function PerfilAluno() {
             />
           </div>
           <div>
-            <label className="label">Categoria</label>
+            <label className="label">Catégorie</label>
             <select
               value={form.categoria || "B"}
               onChange={(e) => setForm({ ...form, categoria: e.target.value })}
@@ -114,9 +114,9 @@ export default function PerfilAluno() {
         </div>
 
         <div>
-          <label className="label">Data de Inscrição</label>
+          <label className="label">Date d’inscription</label>
           <p className="text-sm text-asfalto/60">
-            {form.dataInscricao ? new Date(form.dataInscricao).toLocaleDateString("pt-PT") : "-"}
+            {form.dataInscricao ? new Date(form.dataInscricao).toLocaleDateString("fr-FR") : "-"}
           </p>
         </div>
 
@@ -126,7 +126,7 @@ export default function PerfilAluno() {
             disabled={saving}
             className="px-4 py-2 bg-sinal text-asfalto rounded-lg font-semibold text-sm hover:bg-sinal/90 disabled:opacity-50"
           >
-            {saving ? "A guardar..." : "Guardar Alterações"}
+            {saving ? "Enregistrement..." : "Enregistrer les modifications"}
           </button>
         </div>
       </div>

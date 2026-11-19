@@ -4,9 +4,9 @@ import { MODULOS_BASE, QUESTOES_BASE } from "@/lib/seed-data";
 
 let verificado = false;
 
-// Garante que a base de dados tem os 23 módulos, o banco de questões e um
-// utilizador ADMIN, mesmo que o seed nunca tenha sido executado no servidor.
-// Corre no máximo uma vez por processo; é idempotente.
+// Garantit que la base de données contient les 23 modules, la banque de questions et
+// un utilisateur ADMIN, même si le seed n'a jamais été exécuté sur le serveur.
+// S'exécute au maximum une fois par processus ; il est idempotent.
 export async function garantirDadosBase(): Promise<void> {
   if (verificado) return;
   verificado = true;
@@ -47,18 +47,18 @@ export async function garantirDadosBase(): Promise<void> {
     if (totalAdmins === 0) {
       const passe = process.env.ADMIN_PASSWORD;
       if (!passe) {
-        console.warn("⚠️ Sem conta ADMIN: defina ADMIN_PASSWORD nas variáveis de ambiente.");
+        console.warn("⚠️ Pas de compte ADMIN : définissez ADMIN_PASSWORD dans les variables d'environnement.");
       } else {
         const hash = await bcrypt.hash(passe, 10);
         await prisma.user.create({
-          data: { nome: "Administrador", email: "admin@autoescola.cv", senha: hash, role: "ADMIN" },
+          data: { nome: "Administrateur", email: "admin@autoescola.cv", senha: hash, role: "ADMIN" },
         });
-        console.warn("✅ Conta ADMIN criada (palavra-passe definida via ADMIN_PASSWORD).");
+        console.warn("✅ Compte ADMIN créé (mot de passe défini via ADMIN_PASSWORD).");
       }
     }
   } catch (e) {
-    // Não bloquear o pedido se o seed falhar; tenta novamente no próximo arranque.
+    // Ne pas bloquer la requête si le seed échoue ; nouvelle tentative au prochain démarrage.
     verificado = false;
-    console.error("Bootstrap da base de dados falhou:", e);
+    console.error("Échec du bootstrap de la base de données :", e);
   }
 }
