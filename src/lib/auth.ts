@@ -19,7 +19,7 @@ export async function verificarToken(token: string): Promise<Sessao | null> {
     if (
       typeof p.userId !== "string" ||
       typeof p.nome !== "string" ||
-      (p.role !== "ADMIN" && p.role !== "ALUNO")
+      (p.role !== "ADMIN" && p.role !== "SUPERADMIN" && p.role !== "ALUNO")
     ) {
       return null;
     }
