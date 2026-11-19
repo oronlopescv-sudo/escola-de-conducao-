@@ -148,3 +148,26 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ erro: "Erreur du serveur." }, { status: 500 });
   }
 }
+
+// Apagar escola (super-admin) — remove alunos, rendez-vous, tentativas e admins em cascata
+export async function DELETE(req: Request) {
+  const s = await exigirSuper();
+  if (!s) return NextResponse.json({ erro: "Non autorisé" }, { status: 403 });
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ erro: "Requête invalide." }, { status: 400 });
+  const atual = await prisma.escola.findUnique({ where: { id } });
+  if (!atual) return NextResponse.json({ erro: "École introuvable." }, { status: 404 });
+  if (atual.slug === "cv")
+    return NextResponse.json(
+      { erro: "L'école par défaut de la plateforme ne peut pas être supprimée." },
+      { status: 403 }
+    );
+  try {
+    await prisma.escola.delete({ where: { id } });
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    console.error("Erreur suppression école :", e);
+    return NextResponse.json({ erro: "Erreur du serveur." }, { status: 500 });
+  }
+}

@@ -90,6 +90,8 @@ export async function POST(req: Request) {
         escolaId: escolaIdAlvo,
         aluno: {
           create: {
+            // A linha Aluno também tem de ficar ligada à escola do gestor
+            escolaId: escolaIdAlvo,
             telefone: b.telefone || null,
             morada: b.morada || null,
             documento: b.documento || null,
